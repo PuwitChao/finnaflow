@@ -1,0 +1,205 @@
+{
+    "app": {
+        "name": "FinnaFlow",
+        "tagline": "Professional Financial Visualizer"
+    },
+    "header": {
+        "pro": "FREE",
+        "newSession": "New Session",
+        "exampleTemplate": "Example Templates",
+        "toggleTheme": "Toggle Theme"
+    },
+    "guide": {
+        "howItWorks": {
+            "title": "How it Works",
+            "description": "FinnaFlow aggregates your income and expenses into a centralized \"Wallet Hub\". It then distributes those funds into specific needs, wants, and savings pools based on your categories."
+        },
+        "fillingInputs": {
+            "title": "Filling Inputs",
+            "description": "Enter your gross income sources (salaries, dividends) and recurring expenses. Choose a frequency (Weekly/Monthly/Yearly) and we'll automatically calculate the monthly average for you."
+        },
+        "smartAnalysis": {
+            "title": "Cash Flow Insights",
+            "description": "The chart highlights 'Unallocated Surplus' (money not yet assigned to a category) or 'Budget Deficit' (where spending exceeds income). Use these visual summaries to adjust your 50/30/20 distribution."
+        }
+    },
+    "inputs": {
+        "income": {
+            "title": "Income Sources",
+            "placeholder": "e.g. Salary",
+            "addButton": "Add Income",
+            "common": {
+                "Salary": "Salary",
+                "Freelance": "Freelance",
+                "Dividends": "Dividends",
+                "Gift": "Gift",
+                "Business": "Business",
+                "Custom": "Custom Label..."
+            }
+        },
+        "expense": {
+            "title": "Monthly Expenses",
+            "placeholder": "e.g. Rent",
+            "addButton": "Add Expense",
+            "common": {
+                "Rent": "Rent",
+                "Groceries": "Groceries",
+                "Utilities": "Utilities",
+                "Transport": "Transport",
+                "Health": "Health",
+                "Fun": "Entertainment",
+                "Subscription": "Subscription",
+                "Shopping": "Shopping",
+                "Custom": "Custom Label..."
+            }
+        },
+        "labels": {
+            "label": "Label",
+            "value": "Value",
+            "frequency": "Frequency",
+            "bucket": "Bucket"
+        },
+        "hints": {
+            "label": "Name of the source or spending item",
+            "amount": "The numeric value of the item",
+            "frequency": "How often this occurs (re-averaged to monthly)",
+            "bucket": "Category for budgeting logic",
+            "save": "Download your financial state as a JSON file",
+            "load": "Restore from a previously saved JSON session",
+            "reset": "Clear all data and start a fresh session",
+            "csvExport": "Export data for use in spreadsheet software",
+            "csvImport": "Bulk upload data from a CSV file",
+            "wiki": "Detailed documentation and guides",
+            "currency": "Change your display currency",
+            "language": "Switch interface language",
+            "theme": "Toggle between Light and Dark mode",
+            "templates": "Quick-start with pre-defined financial scenarios"
+        },
+        "itemAdded": "Item added successfully",
+        "noItems": "No Items Added",
+        "noItemsHint": "Use the form above to add your first item",
+        "defaultItem": "Item",
+        "defaultCategory": "Other"
+    },
+    "frequency": {
+        "Weekly": "Weekly",
+        "Monthly": "Monthly",
+        "Yearly": "Yearly"
+    },
+    "category": {
+        "Needs": "Needs",
+        "Wants": "Wants",
+        "Savings": "Savings",
+        "Investments": "Investments",
+        "Debt": "Debt",
+        "Custom": "Custom...",
+        "noCategories": "No Categories Defined"
+    },
+    "chart": {
+        "title": "Visual Cash Flow",
+        "recalculate": "Recalculate Flow",
+        "recalculating": "Recalculating...",
+        "emptyState": "Add some income and expenses to see your flow.",
+        "nodes": {
+            "debtSource": "Debt Source",
+            "wallet": "Total Wallet",
+            "unallocated": "Unallocated",
+            "poolPrefix": "",
+            "poolSuffix": " Pool"
+        },
+        "links": {
+            "debt": "Debt Financing",
+            "surplus": "Unallocated Surplus"
+        }
+    },
+    "footer": {
+        "budgeting": {
+            "title": "50/30/20 Budgeting Rule",
+            "description": "This professional strategy recommends dividing your after-tax income into three categories: 50% for Needs (essentials like rent and utilities), 30% for Wants (lifestyle and hobbies), and 20% for Savings or Debt repayment. FinnaFlow helps you see if your current cash flow matches this ideal distribution for long-term health."
+        },
+        "privacy": {
+            "title": "Local-First Privacy Architecture",
+            "description": "Security is our core priority. FinnaFlow uses a Zero-Server architecture, meaning your financial data is stored and processed exclusively within your local browser's storage. We do not track, collect, or upload your data to any external servers, ensuring your financial secrets remain 100% private and under your control."
+        },
+        "tagline": "Your finance. Your privacy. Your call.",
+        "copyright": "© 2026 FinnaFlow. All rights reserved.",
+        "version": "Version 1.3.0",
+        "disclaimer": "FinnaFlow is an independent budgeting tool for educational and informational purposes only. It does not constitute financial, investment, or tax advice. Always consult a qualified professional before making financial decisions."
+    },
+    "file": {
+        "save": "Save",
+        "load": "Load",
+        "exportSuccess": "Saved successfully",
+        "templateSuccess": "Example template loaded",
+        "templates": {
+            "income15000": "Monthly Income 15,000 THB",
+            "income30000": "Monthly Income 30,000 THB",
+            "beginner": "Beginner",
+            "standard": "Standard"
+        },
+        "templateItems": {
+            "emergencyFund": "Emergency Fund",
+            "etfPortfolio": "ETF Portfolio",
+            "retirementFund": "Retirement Fund",
+            "creditCardPayoff": "Credit Card Payoff"
+        },
+        "importSuccess": "Loaded successfully",
+        "importError": "Invalid file format",
+        "csvExport": "Export CSV",
+        "csvImport": "Import CSV",
+        "wiki": "CSV Guide & Wiki"
+    },
+    "projector": {
+        "enterMode": "Projection Mode",
+        "hubTitle": "FinnaFlow Hub",
+        "macroTitle": "Macro Stress-Tests",
+        "budgetTitle": "Budget Adjustments",
+        "inflation": "Global Inflation",
+        "market": "Market Shock",
+        "inflationPreset": "Inflation",
+        "crashPreset": "Crash",
+        "simulationNote": "Projected state: Simulation Only",
+        "perMonth": "/mo"
+    },
+    "wiki": {
+        "title": "FinnaFlow Wiki",
+        "subtitle": "Complete guide to cash flow visualization and professional data management.",
+        "back": "Back to Dashboard",
+        "csv": {
+            "title": "CSV Import / Export",
+            "description": "Import bulk data using CSV files by following this exact structure in your header row:",
+            "columns": "Columns",
+            "practices": "Best Practices",
+            "noCurrency": "No currency symbols ($, ฿, etc)",
+            "saveUtf8": "Always save as UTF-8",
+            "useQuotes": "Use quotes if names have commas",
+            "col_type": "Type: Income | Expense",
+            "col_frequency": "Frequency: Weekly | Monthly | Yearly",
+            "col_category": "Category: Needs, Wants, Savings..."
+        },
+        "resilience": {
+            "title": "Resilience Engine",
+            "inflation": {
+                "title": "Inflation Simulator",
+                "description": "Simulates global cost-of-living increases. It applies a multiplier to every expense item simultaneously."
+            },
+            "market": {
+                "title": "Market Shock",
+                "description": "Simulates downturns targeting investment-linked income (e.g., Dividends) to test your cash flow floor."
+            }
+        },
+        "privacy": {
+            "title": "Zero-Server Architecture",
+            "description": "FinnaFlow is built as a Local-First application. Your bank details and financial secrets never touch a server. All calculations and storage happen locally on your hardware.",
+            "noTracking": "No Tracking",
+            "noCloud": "No Cloud Storage"
+        },
+        "footer": "FinnaFlow Wiki • Your Finance, Your Cash Flow",
+        "disclaimer": "This tool is provided as-is for personal budgeting purposes. It does not provide financial advice."
+    },
+    "resilience": {
+        "Resilient": "Resilient",
+        "Strained": "Strained",
+        "Critical": "Critical"
+    }
+}

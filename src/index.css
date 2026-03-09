@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --apple-blue: #007AFF;
+    --apple-green: #34C759;
+    --apple-red: #FF3B30;
+    --apple-orange: #FF9500;
+    --apple-purple: #AF52DE;
+    --apple-gray: #8E8E93;
+  }
+
+  body {
+    @apply bg-[#F5F5F7] text-[#1D1D1F] transition-colors duration-500 antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    letter-spacing: -0.011em;
+  }
+
+  .dark body {
+    @apply bg-[#000000] text-[#F5F5F7];
+  }
+
+  /* Smooth background for Apple look */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% -20%, #ffffff 0%, #F5F5F7 100%);
+    z-index: -1;
+  }
+
+  .dark body::before {
+    background: radial-gradient(circle at 50% -20%, #1c1c1e 0%, #000000 100%);
+  }
+}
+
+@layer components {
+  .apple-card {
+    @apply bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-2xl border border-white/20 dark:border-white/5;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  }
+
+  .dark .apple-card {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .apple-input {
+    @apply bg-[#F5F5F7] dark:bg-[#2C2C2E] border-none focus:ring-2 focus:ring-[#007AFF]/50 transition-all outline-none rounded-xl px-5 py-3 text-[15px] font-medium placeholder:text-gray-400;
+  }
+
+  .apple-button-primary {
+    @apply bg-[#007AFF] text-white hover:bg-[#0071E3] active:scale-95 transition-all duration-200 rounded-full px-6 py-2.5 font-semibold text-[15px] flex items-center justify-center gap-2 shadow-sm;
+  }
+
+  .apple-button-secondary {
+    @apply bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#007AFF] hover:bg-[#E8E8ED] dark:hover:bg-[#3A3A3C] active:scale-95 transition-all duration-200 rounded-full px-6 py-2.5 font-semibold text-[15px] flex items-center justify-center gap-2;
+  }
+
+  .apple-icon-btn {
+    @apply p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-all active:scale-90;
+  }
+}
+
+/* Hide scrollbars but keep functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom Chart Tooltip styling */
+.sankey-wrapper text {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Apple-style smooth transitions */
+.view-transition-enter {
+  opacity: 0;
+  transform: scale(0.98) translateY(10px);
+}
+
+.view-transition-enter-active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1), transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Mobile-specific: safe area for notched phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .min-h-screen {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Mobile-specific: larger touch targets */
+@media (max-width: 640px) {
+  .apple-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .apple-input {
+    font-size: 16px !important;
+    /* Prevents iOS zoom on focus */
+  }
+
+  .sankey-wrapper text {
+    font-size: 11px !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .sankey-wrapper text {
+    font-size: 12px !important;
+  }
+}
