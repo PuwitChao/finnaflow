@@ -273,9 +273,92 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
     );
 };
 
+const OnboardingOverlay = () => {
+    const { t, language, setLanguage } = useI18n();
+    const { currency, setCurrency, setPreferencesSet } = useFinanceStore();
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-white/80 dark:bg-black/80 backdrop-blur-3xl animate-in fade-in duration-700">
+            <div className="max-w-2xl w-full apple-card p-10 sm:p-16 rounded-[3rem] shadow-2xl border border-gray-100 dark:border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-32 -mb-32" />
+
+                <div className="relative z-10 text-center space-y-8">
+                    <div className="space-y-4">
+                        <div className="w-20 h-20 bg-blue-500 rounded-[2rem] mx-auto flex items-center justify-center text-white shadow-xl shadow-blue-500/20 mb-8">
+                            <Sparkles size={40} strokeWidth={2.5} />
+                        </div>
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7]">
+                            {t('onboarding.title')}
+                        </h1>
+                        <p className="text-lg text-gray-500 dark:text-gray-400 font-medium max-w-md mx-auto leading-relaxed">
+                            {t('onboarding.subtitle')}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left mt-12">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 text-blue-500 font-bold ml-1">
+                                <Globe size={20} />
+                                <span className="text-sm uppercase tracking-widest">{t('onboarding.language')}</span>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setLanguage('en')}
+                                    className={`flex-1 py-4 rounded-2xl font-bold transition-all ${language === 'en' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20 scale-105' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'}`}
+                                >
+                                    English
+                                </button>
+                                <button
+                                    onClick={() => setLanguage('th')}
+                                    className={`flex-1 py-4 rounded-2xl font-bold transition-all ${language === 'th' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20 scale-105' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'}`}
+                                >
+                                    ไทย
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 text-purple-500 font-bold ml-1">
+                                <Coins size={20} />
+                                <span className="text-sm uppercase tracking-widest">{t('onboarding.currency')}</span>
+                            </div>
+                            <div className="relative">
+                                <select
+                                    value={currency}
+                                    onChange={(e) => setCurrency(e.target.value)}
+                                    className="w-full apple-input !bg-gray-100 dark:!bg-white/5 !border-none py-4 appearance-none cursor-pointer pr-10 font-bold text-lg"
+                                >
+                                    {SUPPORTED_CURRENCIES.map((curr) => (
+                                        <option key={curr.code} value={curr.code}>{curr.code} - {curr.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-10">
+                        <button
+                            onClick={() => setPreferencesSet(true)}
+                            className="w-full py-6 rounded-3xl bg-[#1D1D1F] dark:bg-white text-white dark:text-black font-black text-xl shadow-xl shadow-black/10 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group"
+                        >
+                            {t('onboarding.continue')}
+                            <Activity size={24} className="group-hover:translate-x-1 transition-transform" />
+                        </button>
+                        <p className="mt-6 text-xs text-gray-400 font-medium">
+                            {t('onboarding.privacyNote')}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function App() {
     const store = useFinanceStore();
-    const { incomeItems, expenseItems, isUnlocked, darkMode, toggleTheme, clearSession } = store;
+    const { incomeItems, expenseItems, isUnlocked, darkMode, toggleTheme, clearSession, hasSetPreferences } = store;
     const { t, language, setLanguage } = useI18n();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -307,6 +390,10 @@ function App() {
             document.documentElement.classList.remove('dark');
         }
     }, [darkMode]);
+
+    if (!hasSetPreferences) {
+        return <OnboardingOverlay />;
+    }
 
     const handleRecalculate = () => {
         setIsRefreshing(true);

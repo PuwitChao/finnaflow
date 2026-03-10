@@ -21,6 +21,8 @@ interface FinanceState {
     currency: string;
     categoryMultipliers: Record<string, number>;
     macroConfig: { inflation: number; marketShock: number };
+    hasSetPreferences: boolean;
+    setPreferencesSet: (set: boolean) => void;
     addIncome: (item: FinanceItem) => void;
     removeIncome: (id: string) => void;
     addExpense: (item: FinanceItem) => void;
@@ -53,6 +55,7 @@ export const useFinanceStore = create<FinanceState>()(
             currency: 'USD',
             categoryMultipliers: {},
             macroConfig: { inflation: 0, marketShock: 0 },
+            hasSetPreferences: false,
             notification: null,
             addIncome: (item: FinanceItem) => set((state: FinanceState) => ({
                 incomeItems: [...state.incomeItems, item],
@@ -64,6 +67,7 @@ export const useFinanceStore = create<FinanceState>()(
             removeExpense: (id: string) => set((state: FinanceState) => ({ expenseItems: state.expenseItems.filter(i => i.id !== id) })),
             setUnlocked: (unlocked: boolean) => set({ isUnlocked: unlocked }),
             setCurrency: (currency: string) => set({ currency }),
+            setPreferencesSet: (val: boolean) => set({ hasSetPreferences: val }),
             toggleTheme: () => set((state: FinanceState) => ({ darkMode: !state.darkMode })),
             toggleProjectionMode: () => set((state: FinanceState) => ({ isProjectionMode: !state.isProjectionMode })),
             setCategoryMultiplier: (category: string, value: number) =>

@@ -201,5 +201,13 @@
         "Resilient": "Resilient",
         "Strained": "Strained",
         "Critical": "Critical"
+    },
+    "onboarding": {
+        "title": "Welcome to FinnaFlow",
+        "subtitle": "Tailor your financial visualizer before we begin.",
+        "language": "Interface Language",
+        "currency": "Display Currency",
+        "continue": "Start Visualizing",
+        "privacyNote": "All data is stored locally. No servers. No tracking."
     }
 }
