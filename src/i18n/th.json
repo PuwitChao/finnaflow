@@ -217,7 +217,7 @@
             "noCurrency": "ห้ามใส่สัญลักษณ์สกุลเงิน ($, ฿, etc)",
             "saveUtf8": "บันทึกไฟล์เป็น UTF-8 เสมอ",
             "useQuotes": "ใช้เครื่องหมายคำพูดหากชื่อมีจุลภาค",
-            "col_type": "Type: Income | Expense",
+            "col_type": "ประเภท: Income | Expense | Asset | Liability",
             "col_frequency": "Frequency: Weekly | Monthly | Yearly",
             "col_category": "Category: Needs, Wants, Savings..."
         },

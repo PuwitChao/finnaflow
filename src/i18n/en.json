@@ -217,7 +217,7 @@
             "noCurrency": "No currency symbols ($, ฿, etc)",
             "saveUtf8": "Always save as UTF-8",
             "useQuotes": "Use quotes if names have commas",
-            "col_type": "Type: Income | Expense",
+            "col_type": "Type: Income | Expense | Asset | Liability",
             "col_frequency": "Frequency: Weekly | Monthly | Yearly",
             "col_category": "Category: Needs, Wants, Savings..."
         },
