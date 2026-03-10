@@ -10,6 +10,8 @@ export interface FinanceItem {
     amount: number;
     frequency: Frequency;
     category: Category;
+    startDate?: string;
+    endDate?: string;
 }
 
 interface FinanceState {
@@ -22,7 +24,9 @@ interface FinanceState {
     categoryMultipliers: Record<string, number>;
     macroConfig: { inflation: number; marketShock: number };
     hasSetPreferences: boolean;
-    setPreferencesSet: (set: boolean) => void;
+    lastUpdated: string | null;
+    setPreferencesSet: (val: boolean) => void;
+    duplicateItem: (id: string, type: 'income' | 'expense') => void;
     addIncome: (item: FinanceItem) => void;
     removeIncome: (id: string) => void;
     addExpense: (item: FinanceItem) => void;
@@ -56,18 +60,36 @@ export const useFinanceStore = create<FinanceState>()(
             categoryMultipliers: {},
             macroConfig: { inflation: 0, marketShock: 0 },
             hasSetPreferences: false,
+            lastUpdated: null,
             notification: null,
             addIncome: (item: FinanceItem) => set((state: FinanceState) => ({
                 incomeItems: [...state.incomeItems, item],
+                lastUpdated: new Date().toISOString()
             })),
-            removeIncome: (id: string) => set((state: FinanceState) => ({ incomeItems: state.incomeItems.filter(i => i.id !== id) })),
+            removeIncome: (id: string) => set((state: FinanceState) => ({
+                incomeItems: state.incomeItems.filter(i => i.id !== id),
+                lastUpdated: new Date().toISOString()
+            })),
             addExpense: (item: FinanceItem) => set((state: FinanceState) => ({
                 expenseItems: [...state.expenseItems, item],
+                lastUpdated: new Date().toISOString()
             })),
-            removeExpense: (id: string) => set((state: FinanceState) => ({ expenseItems: state.expenseItems.filter(i => i.id !== id) })),
+            removeExpense: (id: string) => set((state: FinanceState) => ({
+                expenseItems: state.expenseItems.filter(i => i.id !== id),
+                lastUpdated: new Date().toISOString()
+            })),
             setUnlocked: (unlocked: boolean) => set({ isUnlocked: unlocked }),
             setCurrency: (currency: string) => set({ currency }),
             setPreferencesSet: (val: boolean) => set({ hasSetPreferences: val }),
+            duplicateItem: (id: string, type: 'income' | 'expense') => set((state: FinanceState) => {
+                const items = type === 'income' ? state.incomeItems : state.expenseItems;
+                const item = items.find(i => i.id === id);
+                if (!item) return state;
+                const newItem = { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` };
+                return type === 'income'
+                    ? { incomeItems: [...state.incomeItems, newItem], lastUpdated: new Date().toISOString() }
+                    : { expenseItems: [...state.expenseItems, newItem], lastUpdated: new Date().toISOString() };
+            }),
             toggleTheme: () => set((state: FinanceState) => ({ darkMode: !state.darkMode })),
             toggleProjectionMode: () => set((state: FinanceState) => ({ isProjectionMode: !state.isProjectionMode })),
             setCategoryMultiplier: (category: string, value: number) =>
@@ -101,6 +123,7 @@ export const useFinanceStore = create<FinanceState>()(
                 currency: 'THB',
                 categoryMultipliers: {},
                 macroConfig: { inflation: 0, marketShock: 0 },
+                lastUpdated: new Date().toISOString()
             }),
         }),
         {

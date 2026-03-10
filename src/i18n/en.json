@@ -57,13 +57,15 @@
             "label": "Label",
             "value": "Value",
             "frequency": "Frequency",
-            "bucket": "Bucket"
+            "bucket": "Bucket",
+            "endDate": "End Date"
         },
         "hints": {
             "label": "Name of the source or spending item",
             "amount": "The numeric value of the item",
             "frequency": "How often this occurs (re-averaged to monthly)",
             "bucket": "Category for budgeting logic",
+            "endDate": "Optional: date when this item stops",
             "save": "Download your financial state as a JSON file",
             "load": "Restore from a previously saved JSON session",
             "reset": "Clear all data and start a fresh session",
@@ -79,7 +81,10 @@
         "noItems": "No Items Added",
         "noItemsHint": "Use the form above to add your first item",
         "defaultItem": "Item",
-        "defaultCategory": "Other"
+        "defaultCategory": "Other",
+        "duplicate": "Duplicate",
+        "lastUpdated": "Last Update",
+        "expires": "Expires"
     },
     "frequency": {
         "Weekly": "Weekly",

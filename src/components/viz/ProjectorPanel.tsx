@@ -37,13 +37,17 @@ export const ProjectorPanel: React.FC = () => {
     const infFactor = 1 + (macroConfig.inflation / 100);
     const mktFactor = 1 - (macroConfig.marketShock / 100);
 
+    const today = new Date().toISOString().split('T')[0];
+
     const projectedIncome = incomeItems.reduce((acc, item) => {
+        if (item.endDate && item.endDate < today) return acc;
         const base = normalizeToMonthly(item.amount, item.frequency);
         const isInvestment = item.category === 'Investments' || item.category === 'Dividends' || item.name.toLowerCase().includes('investment');
         return acc + (isInvestment ? base * mktFactor : base);
     }, 0);
 
     const projectedExpense = expenseItems.reduce((acc, item) => {
+        if (item.endDate && item.endDate < today) return acc;
         const base = normalizeToMonthly(item.amount, item.frequency);
         const mult = categoryMultipliers[item.category] ?? 1;
         return acc + (base * mult * infFactor);

@@ -7,10 +7,10 @@ import { AppGuide } from './components/layout/AppGuide';
 import { WikiPage } from './components/layout/WikiPage';
 import { exportToCSV, parseCSV } from './utils/csvProcessor';
 import { getCurrencySymbol, SUPPORTED_CURRENCIES } from './utils/currencies';
-import { Plus, Trash2, Wallet, PieChart, Activity, Sun, Moon, RefreshCw, LogOut, Globe, Download, Upload, FileText, HelpCircle, Coins, Sparkles, ChevronDown, ShieldCheck } from 'lucide-react';
+import { Plus, Trash2, Wallet, PieChart, Activity, Sun, Moon, RefreshCw, LogOut, Globe, Download, Upload, FileText, HelpCircle, Coins, Sparkles, ChevronDown, ShieldCheck, Copy, Calendar } from 'lucide-react';
 
 const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
-    const { incomeItems, expenseItems, addIncome, addExpense, removeIncome, removeExpense, showNotification, currency } = useFinanceStore();
+    const { incomeItems, expenseItems, addIncome, addExpense, removeIncome, removeExpense, showNotification, currency, duplicateItem } = useFinanceStore();
     const { t } = useI18n();
     const symbol = getCurrencySymbol(currency);
 
@@ -26,6 +26,7 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
     const [category, setCategory] = useState<Category>('Needs');
     const [customCategory, setCustomCategory] = useState('');
     const [isCustomMode, setIsCustomMode] = useState(false);
+    const [endDate, setEndDate] = useState('');
 
     const handleAdd = () => {
         const finalName = isCustomLabelMode ? (customName || t('inputs.labels.defaultItem')) : (name || t('inputs.labels.defaultItem'));
@@ -37,12 +38,15 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
             amount: parseFloat(amount),
             frequency,
             category: finalCategory,
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: endDate || undefined
         });
         showNotification(t('inputs.itemAdded'), 'success');
         setName('');
         setCustomName('');
         setIsCustomLabelMode(false);
         setAmount('');
+        setEndDate('');
         if (isCustomMode) {
             setCustomCategory('');
             setIsCustomMode(false);
@@ -221,6 +225,21 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
                             )}
                         </div>
                     </div>
+                    <div className="space-y-2">
+                        <div className="flex flex-col ml-1">
+                            <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.endDate') || 'End Date'}</label>
+                            <span className="text-[10px] text-gray-300 dark:text-gray-500 mb-1">{t('inputs.hints.endDate') || 'Optional: When this stops'}</span>
+                        </div>
+                        <div className="relative group/date">
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="w-full apple-input pr-10"
+                            />
+                            <Calendar size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </div>
+                    </div>
                 </div>
                 <button
                     onClick={handleAdd}
@@ -257,14 +276,29 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
                                         }`}>
                                         {t(`category.${item.category}`)}
                                     </span>
+                                    {item.endDate && (
+                                        <span className="flex items-center gap-1 text-[9px] font-bold text-gray-400 border border-gray-100 dark:border-white/5 px-2 py-0.5 rounded-full">
+                                            <Calendar size={10} />
+                                            {t('inputs.expires')}: {item.endDate}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                            <button
-                                onClick={() => onRemove(item.id)}
-                                className="p-2 text-gray-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-                            >
-                                <Trash2 size={18} />
-                            </button>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => duplicateItem(item.id, type)}
+                                    className="p-2 text-gray-300 hover:text-blue-500 transition-colors"
+                                    title={t('inputs.duplicate') || 'Duplicate'}
+                                >
+                                    <Copy size={16} />
+                                </button>
+                                <button
+                                    onClick={() => onRemove(item.id)}
+                                    className="p-2 text-gray-300 hover:text-rose-500 transition-colors"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
                         </div>
                     ))
                 )}
@@ -358,7 +392,7 @@ const OnboardingOverlay = () => {
 
 function App() {
     const store = useFinanceStore();
-    const { incomeItems, expenseItems, isUnlocked, darkMode, toggleTheme, clearSession, hasSetPreferences } = store;
+    const { incomeItems, expenseItems, isUnlocked, darkMode, toggleTheme, clearSession, hasSetPreferences, lastUpdated } = store;
     const { t, language, setLanguage } = useI18n();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -650,9 +684,15 @@ function App() {
                         <div className="flex flex-col items-center gap-2">
                             <p className="text-[13px] font-bold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">{t('footer.copyright')}</p>
                             <div className="flex items-center gap-3">
-                                <span className="w-1 h-1 rounded-full bg-gray-300" />
                                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{t('footer.version')}</p>
-                                <span className="w-1 h-1 rounded-full bg-gray-300" />
+                                {lastUpdated && (
+                                    <>
+                                        <span className="w-1 h-1 rounded-full bg-gray-300" />
+                                        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                                            {t('inputs.lastUpdated')}: {new Date(lastUpdated).toLocaleTimeString(language === 'th' ? 'th-TH' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    </>
+                                )}
                             </div>
                         </div>
 
