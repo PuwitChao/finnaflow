@@ -55,19 +55,13 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleAdd();
-        }
+        if (e.key === 'Enter') handleAdd();
     };
 
     const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const val = e.target.value;
-        if (val === 'Custom') {
-            setIsCustomMode(true);
-        } else {
-            setCategory(val);
-            setIsCustomMode(false);
-        }
+        if (val === 'Custom') setIsCustomMode(true);
+        else { setCategory(val); setIsCustomMode(false); }
     };
 
     const title = type === 'income' ? t('inputs.income.title') : t('inputs.expense.title');
@@ -94,26 +88,10 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
                         </div>
                         <div className="relative group/label">
                             {isCustomLabelMode ? (
-                                <input
-                                    autoFocus
-                                    type="text"
-                                    placeholder={placeholder}
-                                    value={customName}
-                                    onChange={(e) => setCustomName(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    onBlur={() => { if (!customName) setIsCustomLabelMode(false); }}
-                                    className="w-full apple-input"
-                                />
+                                <input autoFocus type="text" placeholder={placeholder} value={customName} onChange={(e) => setCustomName(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => { if (!customName) setIsCustomLabelMode(false); }} className="w-full apple-input" />
                             ) : (
                                 <div className="relative">
-                                    <select
-                                        value={name}
-                                        onChange={(e) => {
-                                            if (e.target.value === 'Custom') setIsCustomLabelMode(true);
-                                            else setName(e.target.value);
-                                        }}
-                                        className="w-full apple-input appearance-none cursor-pointer pr-10"
-                                    >
+                                    <select value={name} onChange={(e) => { if (e.target.value === 'Custom') setIsCustomLabelMode(true); else setName(e.target.value); }} className="w-full apple-input appearance-none cursor-pointer pr-10">
                                         <option value="">{t('inputs.labels.label')}...</option>
                                         {type === 'income' ? (
                                             <>
@@ -147,104 +125,39 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
                             <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.value')}</label>
                             <span className="text-[10px] text-gray-300 dark:text-gray-500 mb-1">{t('inputs.hints.amount')}</span>
                         </div>
-                        <div className="relative group/amount">
-                            <input
-                                type="number"
-                                placeholder="0"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                className="w-full apple-input pr-12"
-                            />
-                            <div className="absolute right-2 top-2 bottom-2 flex flex-col gap-0.5 scale-0 group-focus-within/amount:scale-100 transition-transform">
-                                {[1000, 500].map(val => (
-                                    <button
-                                        key={val}
-                                        onClick={() => setAmount(prev => String((parseFloat(prev) || 0) + val))}
-                                        className="flex-1 text-[8px] font-bold bg-white dark:bg-[#3A3A3C] hover:bg-[#F5F5F7] dark:hover:bg-[#48484A] px-2 rounded-lg transition-all border border-gray-100 dark:border-white/5"
-                                    >
-                                        +{val.toLocaleString()}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                        <input type="number" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} onKeyDown={handleKeyDown} className="w-full apple-input" />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                     <div className="space-y-2">
                         <div className="flex flex-col ml-1">
                             <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.frequency')}</label>
-                            <span className="text-[10px] text-gray-300 dark:text-gray-500 mb-1">{t('inputs.hints.frequency')}</span>
                         </div>
-                        <div className="relative">
-                            <select
-                                value={frequency}
-                                onChange={(e) => setFrequency(e.target.value as Frequency)}
-                                className="w-full apple-input appearance-none cursor-pointer pr-10"
-                            >
-                                <option value="Weekly">{t('frequency.Weekly')}</option>
-                                <option value="Monthly">{t('frequency.Monthly')}</option>
-                                <option value="Yearly">{t('frequency.Yearly')}</option>
-                            </select>
-                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                        </div>
+                        <select value={frequency} onChange={(e) => setFrequency(e.target.value as Frequency)} className="w-full apple-input pr-10">
+                            <option value="Weekly">{t('frequency.Weekly')}</option>
+                            <option value="Monthly">{t('frequency.Monthly')}</option>
+                            <option value="Yearly">{t('frequency.Yearly')}</option>
+                        </select>
                     </div>
                     <div className="space-y-2">
                         <div className="flex flex-col ml-1">
                             <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.bucket')}</label>
-                            <span className="text-[10px] text-gray-300 dark:text-gray-500 mb-1">{t('inputs.hints.bucket')}</span>
                         </div>
-                        <div className="relative">
-                            {isCustomMode ? (
-                                <input
-                                    autoFocus
-                                    type="text"
-                                    placeholder="..."
-                                    value={customCategory}
-                                    onChange={(e) => setCustomCategory(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    onBlur={() => { if (!customCategory) setIsCustomMode(false); }}
-                                    className="w-full apple-input"
-                                />
-                            ) : (
-                                <div className="relative">
-                                    <select
-                                        value={category}
-                                        onChange={handleCategoryChange}
-                                        className="w-full apple-input appearance-none cursor-pointer pr-10"
-                                    >
-                                        <option value="Needs">{t('category.Needs')}</option>
-                                        <option value="Wants">{t('category.Wants')}</option>
-                                        <option value="Savings">{t('category.Savings')}</option>
-                                        <option value="Investments">{t('category.Investments')}</option>
-                                        <option value="Debt">{t('category.Debt')}</option>
-                                        <option value="Custom">{t('category.Custom')}</option>
-                                    </select>
-                                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex flex-col ml-1">
-                            <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.endDate') || 'End Date'}</label>
-                            <span className="text-[10px] text-gray-300 dark:text-gray-500 mb-1">{t('inputs.hints.endDate') || 'Optional: When this stops'}</span>
-                        </div>
-                        <div className="relative group/date">
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full apple-input pr-10"
-                            />
-                            <Calendar size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                        </div>
+                        {isCustomMode ? (
+                            <input autoFocus type="text" placeholder="..." value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => { if (!customCategory) setIsCustomMode(false); }} className="w-full apple-input" />
+                        ) : (
+                            <select value={category} onChange={handleCategoryChange} className="w-full apple-input appearance-none pr-10">
+                                <option value="Needs">{t('category.Needs')}</option>
+                                <option value="Wants">{t('category.Wants')}</option>
+                                <option value="Savings">{t('category.Savings')}</option>
+                                <option value="Investments">{t('category.Investments')}</option>
+                                <option value="Debt">{t('category.Debt')}</option>
+                                <option value="Custom">{t('category.Custom')}</option>
+                            </select>
+                        )}
                     </div>
                 </div>
-                <button
-                    onClick={handleAdd}
-                    className="apple-button-primary w-full py-4 mt-2"
-                >
+                <button onClick={handleAdd} className="apple-button-primary w-full py-4 mt-2">
                     <Plus size={18} strokeWidth={2.5} />
                     {addButton}
                 </button>
@@ -253,18 +166,11 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
             <div className="flex-1 overflow-y-auto max-h-[250px] sm:max-h-[350px] space-y-3 scrollbar-hide pr-1 pb-4 relative z-10">
                 {items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-5">
-                            {type === 'income' ? <Wallet size={24} className="text-gray-300 dark:text-gray-600" /> : <Activity size={24} className="text-gray-300 dark:text-gray-600" />}
-                        </div>
                         <p className="text-sm font-semibold text-gray-300 dark:text-gray-600">{t('inputs.noItems')}</p>
-                        <p className="text-xs text-gray-200 dark:text-gray-700 mt-1">{t('inputs.noItemsHint')}</p>
                     </div>
                 ) : (
                     items.map((item) => (
-                        <div
-                            key={item.id}
-                            className="group flex items-center justify-between p-5 rounded-2xl bg-white/50 dark:bg-[#2C2C2E]/50 hover:bg-white dark:hover:bg-[#2C2C2E] transition-all duration-300 border border-transparent hover:border-gray-100 dark:hover:border-white/5"
-                        >
+                        <div key={item.id} className="group flex items-center justify-between p-5 rounded-2xl bg-white/50 dark:bg-[#2C2C2E]/50 hover:bg-white transition-all duration-300">
                             <div className="flex flex-col">
                                 <span className="font-semibold text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7]">{item.name}</span>
                                 <div className="flex items-center gap-3 mt-1.5">
@@ -276,13 +182,160 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
                                         }`}>
                                         {t(`category.${item.category}`)}
                                     </span>
-                                    {item.endDate && (
-                                        <span className="flex items-center gap-1 text-[9px] font-bold text-gray-400 border border-gray-100 dark:border-white/5 px-2 py-0.5 rounded-full">
-                                            <Calendar size={10} />
-                                            {t('inputs.expires')}: {item.endDate}
-                                        </span>
-                                    )}
                                 </div>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                <button onClick={() => duplicateItem(item.id, type)} className="p-2 text-gray-300 hover:text-blue-500"><Copy size={16} /></button>
+                                <button onClick={() => onRemove(item.id)} className="p-2 text-gray-300 hover:text-rose-500"><Trash2 size={18} /></button>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+};
+
+const NetWorthInput = ({ type }: { type: 'asset' | 'liability' }) => {
+    const { assetItems, liabilityItems, addAsset, addLiability, removeAsset, removeLiability, showNotification, currency, duplicateItem } = useFinanceStore();
+    const { t } = useI18n();
+    const symbol = getCurrencySymbol(currency);
+
+    const items = type === 'asset' ? assetItems : liabilityItems;
+    const onAdd = type === 'asset' ? addAsset : addLiability;
+    const onRemove = type === 'asset' ? removeAsset : removeLiability;
+
+    const [name, setName] = useState('');
+    const [customName, setCustomName] = useState('');
+    const [isCustomLabelMode, setIsCustomLabelMode] = useState(false);
+    const [amount, setAmount] = useState('');
+    const [category, setCategory] = useState<string>('Other');
+
+    const handleAdd = () => {
+        const finalName = isCustomLabelMode ? (customName || t('inputs.labels.defaultItem')) : (name || t('inputs.labels.defaultItem'));
+        if (!amount) return;
+        onAdd({
+            id: crypto.randomUUID(),
+            name: finalName,
+            amount: parseFloat(amount),
+            category,
+        });
+        showNotification(t('inputs.itemAdded'), 'success');
+        setName('');
+        setCustomName('');
+        setIsCustomLabelMode(false);
+        setAmount('');
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') handleAdd();
+    };
+
+    const title = type === 'asset' ? t('inputs.assets.title') : t('inputs.liabilities.title');
+    const placeholder = type === 'asset' ? t('inputs.assets.placeholder') : t('inputs.liabilities.placeholder');
+    const addButton = type === 'asset' ? t('inputs.assets.addButton') : t('inputs.liabilities.addButton');
+
+    return (
+        <div className="apple-card p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2.5rem] flex flex-col h-full transition-all duration-500 overflow-hidden relative group/card">
+            <div className="flex items-center justify-between mb-6 sm:mb-10">
+                <div className="flex items-center gap-4">
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${type === 'asset' ? 'bg-emerald-500 text-white' : 'bg-purple-600 text-white'}`}>
+                        {type === 'asset' ? <Sparkles size={22} strokeWidth={2} /> : <ShieldCheck size={22} strokeWidth={2} />}
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7]">{title}</h2>
+                </div>
+            </div>
+
+            <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-10 relative z-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                    <div className="space-y-2">
+                        <div className="flex flex-col ml-1">
+                            <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.label')}</label>
+                        </div>
+                        <div className="relative group/label">
+                            {isCustomLabelMode ? (
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder={placeholder}
+                                    value={customName}
+                                    onChange={(e) => setCustomName(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    onBlur={() => { if (!customName) setIsCustomLabelMode(false); }}
+                                    className="w-full apple-input"
+                                />
+                            ) : (
+                                <div className="relative">
+                                    <select
+                                        value={name}
+                                        onChange={(e) => {
+                                            if (e.target.value === 'Custom') setIsCustomLabelMode(true);
+                                            else setName(e.target.value);
+                                        }}
+                                        className="w-full apple-input appearance-none cursor-pointer pr-10"
+                                    >
+                                        <option value="">{t('inputs.labels.label')}...</option>
+                                        {type === 'asset' ? (
+                                            <>
+                                                <option value={t('inputs.assets.common.Cash')}>{t('inputs.assets.common.Cash')}</option>
+                                                <option value={t('inputs.assets.common.Investments')}>{t('inputs.assets.common.Investments')}</option>
+                                                <option value={t('inputs.assets.common.Property')}>{t('inputs.assets.common.Property')}</option>
+                                                <option value={t('inputs.assets.common.Crypto')}>{t('inputs.assets.common.Crypto')}</option>
+                                                <option value={t('inputs.assets.common.Collectibles')}>{t('inputs.assets.common.Collectibles')}</option>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <option value={t('inputs.liabilities.common.Mortgage')}>{t('inputs.liabilities.common.Mortgage')}</option>
+                                                <option value={t('inputs.liabilities.common.CreditCard')}>{t('inputs.liabilities.common.CreditCard')}</option>
+                                                <option value={t('inputs.liabilities.common.CarLoan')}>{t('inputs.liabilities.common.CarLoan')}</option>
+                                                <option value={t('inputs.liabilities.common.StudentLoan')}>{t('inputs.liabilities.common.StudentLoan')}</option>
+                                                <option value={t('inputs.liabilities.common.PersonalLoan')}>{t('inputs.liabilities.common.PersonalLoan')}</option>
+                                            </>
+                                        )}
+                                        <option value="Custom">{t('inputs.income.common.Custom')}</option>
+                                    </select>
+                                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex flex-col ml-1">
+                            <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.value')}</label>
+                        </div>
+                        <input
+                            type="number"
+                            placeholder="0"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="w-full apple-input"
+                        />
+                    </div>
+                </div>
+                <button
+                    onClick={handleAdd}
+                    className={`apple-button-primary w-full py-4 mt-2 !bg-opacity-90 ${type === 'asset' ? 'hover:!bg-emerald-600' : 'hover:!bg-purple-700'}`}
+                >
+                    <Plus size={18} strokeWidth={2.5} />
+                    {addButton}
+                </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto max-h-[250px] sm:max-h-[350px] space-y-3 scrollbar-hide pr-1 pb-4 relative z-10">
+                {items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <p className="text-sm font-semibold text-gray-300 dark:text-gray-600">{t('inputs.noItems')}</p>
+                    </div>
+                ) : (
+                    items.map((item) => (
+                        <div
+                            key={item.id}
+                            className="group flex items-center justify-between p-5 rounded-2xl bg-white/50 dark:bg-[#2C2C2E]/50 hover:bg-white dark:hover:bg-[#2C2C2E] transition-all duration-300 border border-transparent hover:border-gray-100 dark:hover:border-white/5"
+                        >
+                            <div className="flex flex-col">
+                                <span className="font-semibold text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7]">{item.name}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{symbol}{item.amount.toLocaleString()}</span>
                             </div>
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
@@ -302,6 +355,64 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
                         </div>
                     ))
                 )}
+            </div>
+        </div>
+    );
+};
+
+const NetWorthCard = () => {
+    const { assetItems, liabilityItems, currency } = useFinanceStore();
+    const { t } = useI18n();
+    const symbol = getCurrencySymbol(currency);
+
+    const totalAssets = assetItems.reduce((acc, i) => acc + i.amount, 0);
+    const totalLiabilities = liabilityItems.reduce((acc, i) => acc + i.amount, 0);
+    const netWorth = totalAssets - totalLiabilities;
+    const equityRatio = totalAssets > 0 ? (netWorth / totalAssets) * 100 : 0;
+
+    let statusKey = 'Stable';
+    if (equityRatio > 70) statusKey = 'Wealthy';
+    else if (equityRatio < 30) statusKey = 'Strained';
+
+    return (
+        <div className="apple-card p-10 rounded-[3rem] bg-gradient-to-br from-[#1D1D1F] to-[#2C2C2E] dark:from-[#0A0A0B] dark:to-[#1D1D1F] overflow-hidden relative group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -mr-32 -mt-32 opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-10">
+                <div className="space-y-4 text-center sm:text-left">
+                    <div className="flex items-center justify-center sm:justify-start gap-3">
+                        <Sparkles className="text-emerald-400" size={20} />
+                        <h3 className="text-gray-400 font-bold uppercase tracking-widest text-xs">{t('inputs.netWorth.title')}</h3>
+                    </div>
+                    <div>
+                        <p className="text-gray-500 text-sm font-semibold mb-2">{t('inputs.netWorth.currentNetWorth')}</p>
+                        <h2 className={`text-4xl sm:text-6xl font-black transition-colors ${netWorth >= 0 ? 'text-white' : 'text-rose-500'}`}>
+                            {symbol}{netWorth.toLocaleString()}
+                        </h2>
+                    </div>
+                    <div className="flex gap-4 pt-2">
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/5 backdrop-blur-md">
+                            <ShieldCheck className="text-emerald-500" size={16} />
+                            <span className="text-xs font-bold text-emerald-500">{t(`inputs.netWorth.status.${statusKey}`)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 w-full sm:w-auto">
+                    <div className="apple-card !bg-white/5 !border-white/5 p-6 rounded-3xl space-y-2 text-center sm:text-left min-w-[160px]">
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-tighter">{t('inputs.netWorth.totalAssets')}</p>
+                        <p className="text-2xl font-bold text-white">{symbol}{totalAssets.toLocaleString()}</p>
+                        <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden mt-3">
+                            <div className="h-full bg-emerald-500" style={{ width: '100%' }} />
+                        </div>
+                    </div>
+                    <div className="apple-card !bg-white/5 !border-white/5 p-6 rounded-3xl space-y-2 text-center sm:text-left min-w-[160px]">
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-tighter">{t('inputs.netWorth.totalLiabilities')}</p>
+                        <p className="text-2xl font-bold text-rose-500">{symbol}{totalLiabilities.toLocaleString()}</p>
+                        <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden mt-3">
+                            <div className="h-full bg-rose-500" style={{ width: `${Math.min((totalLiabilities / Math.max(totalAssets, 1)) * 100, 100)}%` }} />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -392,7 +503,7 @@ const OnboardingOverlay = () => {
 
 function App() {
     const store = useFinanceStore();
-    const { incomeItems, expenseItems, isUnlocked, darkMode, toggleTheme, clearSession, hasSetPreferences, lastUpdated } = store;
+    const { incomeItems, expenseItems, assetItems, liabilityItems, isUnlocked, darkMode, toggleTheme, clearSession, hasSetPreferences, lastUpdated } = store;
     const { t, language, setLanguage } = useI18n();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -470,6 +581,8 @@ function App() {
                     clearSession();
                     data.incomeItems.forEach((item: FinanceItem) => store.addIncome(item));
                     data.expenseItems.forEach((item: FinanceItem) => store.addExpense(item));
+                    if (data.assetItems) data.assetItems.forEach((item: any) => store.addAsset(item));
+                    if (data.liabilityItems) data.liabilityItems.forEach((item: any) => store.addLiability(item));
                     store.showNotification(t('file.importSuccess'), 'success');
                 }
             } catch { store.showNotification(t('file.importError'), 'error'); }
@@ -478,7 +591,7 @@ function App() {
     };
 
     const handleCSVExport = () => {
-        const csv = exportToCSV(incomeItems, expenseItems);
+        const csv = exportToCSV(incomeItems, expenseItems, assetItems, liabilityItems);
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -494,11 +607,13 @@ function App() {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const { income, expenses } = parseCSV(e.target?.result as string);
-                if (income.length > 0 || expenses.length > 0) {
+                const { income, expenses, assets, liabilities } = parseCSV(e.target?.result as string);
+                if (income.length > 0 || expenses.length > 0 || assets.length > 0 || liabilities.length > 0) {
                     clearSession();
                     income.forEach(item => store.addIncome(item));
                     expenses.forEach(item => store.addExpense(item));
+                    assets.forEach(item => store.addAsset(item));
+                    liabilities.forEach(item => store.addLiability(item));
                     store.showNotification(t('file.importSuccess'), 'success');
                 }
             } catch { store.showNotification(t('file.importError'), 'error'); }
@@ -510,6 +625,9 @@ function App() {
     const handleLoadTemplate = (type: 'income15000' | 'income30000') => {
         let income: FinanceItem[];
         let expenses: FinanceItem[];
+        let assets: any[] = [];
+        let liabilities: any[] = [];
+
         if (type === 'income15000') {
             income = [
                 { id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: 15000, frequency: 'Monthly', category: 'Needs' }
@@ -519,6 +637,9 @@ function App() {
                 { id: crypto.randomUUID(), name: t('inputs.expense.common.Groceries'), amount: 3500, frequency: 'Monthly', category: 'Needs' },
                 { id: crypto.randomUUID(), name: t('inputs.expense.common.Fun'), amount: 1500, frequency: 'Monthly', category: 'Wants' },
                 { id: crypto.randomUUID(), name: t('file.templateItems.emergencyFund'), amount: 1000, frequency: 'Monthly', category: 'Savings' }
+            ];
+            assets = [
+                { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: 25000, category: 'Cash' }
             ];
         } else {
             income = [
@@ -534,8 +655,15 @@ function App() {
                 { id: crypto.randomUUID(), name: t('file.templateItems.retirementFund'), amount: 2500, frequency: 'Monthly', category: 'Savings' },
                 { id: crypto.randomUUID(), name: t('file.templateItems.creditCardPayoff'), amount: 1500, frequency: 'Monthly', category: 'Debt' }
             ];
+            assets = [
+                { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: 50000, category: 'Cash' },
+                { id: crypto.randomUUID(), name: t('inputs.assets.common.Investments'), amount: 120000, category: 'Investments' }
+            ];
+            liabilities = [
+                { id: crypto.randomUUID(), name: t('inputs.liabilities.common.CarLoan'), amount: 250000, category: 'CarLoan' }
+            ];
         }
-        store.loadExampleTemplate({ income, expenses });
+        store.loadExampleTemplate({ income, expenses, assets, liabilities });
         store.showNotification(t('file.templateSuccess'), 'success');
         setShowTemplateMenu(false);
     };
@@ -627,6 +755,24 @@ function App() {
                         <FinanceInput type="income" />
                         <FinanceInput type="expense" />
                     </article>
+
+                    <section className="space-y-10 pt-10 border-t border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-bottom-5 duration-1000">
+                        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                            <div className="space-y-2">
+                                <span className="text-blue-500 font-bold uppercase tracking-widest text-xs ml-1">{t('inputs.netWorth.subtitle') || 'Wealth & Assets'}</span>
+                                <h2 className="text-3xl sm:text-4xl font-black text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                    {t('inputs.netWorth.title') || 'Net Worth Explorer'}
+                                </h2>
+                            </div>
+                        </div>
+
+                        <NetWorthCard />
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
+                            <NetWorthInput type="asset" />
+                            <NetWorthInput type="liability" />
+                        </div>
+                    </section>
                     <section className="apple-card p-6 sm:p-12 md:p-20 rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden transition-all duration-700 relative">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-10 mb-10 sm:mb-20 relative z-10">
                             <div className="flex items-center gap-4 sm:gap-6">

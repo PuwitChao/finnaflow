@@ -12,8 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **📅 Item Expiry (End Date)**: Support for income and expense expiration dates.
   - Automatic marking of expired items in the dashboard list.
   - The projection engine now automatically excludes expired items.
+- **💰 Net Worth Tracking**: Comprehensive support for tracking Assets and Liabilities.
+  - New **Net Worth Explorer** summary dashboard.
+  - Dynamic **Equity Ratio** calculations for wealth health.
+  - Side-by-side asset and debt management panels.
 - **👯 Quality of Life (QoL)**:
-  - Added one-click **Item Duplication** for faster data entry.
+  - Added one-click **Item Duplication** for all financial categories (Flow & Wealth).
   - Integrated **Last Updated Status** in the footer for better session awareness.
 - **🏠 Smarter Onboarding**: Updated the initial selection flow for language and currency.
 

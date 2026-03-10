@@ -14,9 +14,18 @@ export interface FinanceItem {
     endDate?: string;
 }
 
+export interface NetWorthItem {
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+}
+
 interface FinanceState {
     incomeItems: FinanceItem[];
     expenseItems: FinanceItem[];
+    assetItems: NetWorthItem[];
+    liabilityItems: NetWorthItem[];
     isUnlocked: boolean;
     darkMode: boolean;
     isProjectionMode: boolean;
@@ -26,11 +35,15 @@ interface FinanceState {
     hasSetPreferences: boolean;
     lastUpdated: string | null;
     setPreferencesSet: (val: boolean) => void;
-    duplicateItem: (id: string, type: 'income' | 'expense') => void;
+    duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability') => void;
     addIncome: (item: FinanceItem) => void;
     removeIncome: (id: string) => void;
     addExpense: (item: FinanceItem) => void;
     removeExpense: (id: string) => void;
+    addAsset: (item: NetWorthItem) => void;
+    removeAsset: (id: string) => void;
+    addLiability: (item: NetWorthItem) => void;
+    removeLiability: (id: string) => void;
     setUnlocked: (unlocked: boolean) => void;
     setCurrency: (currency: string) => void;
     toggleTheme: () => void;
@@ -41,7 +54,7 @@ interface FinanceState {
     notification: { message: string, type: 'info' | 'success' | 'error' } | null;
     showNotification: (message: string, type?: 'info' | 'success' | 'error') => void;
     clearSession: () => void;
-    loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[] }) => void;
+    loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[] }) => void;
 }
 
 /**
@@ -53,6 +66,8 @@ export const useFinanceStore = create<FinanceState>()(
         (set) => ({
             incomeItems: [],
             expenseItems: [],
+            assetItems: [],
+            liabilityItems: [],
             isUnlocked: true,
             darkMode: false,
             isProjectionMode: false,
@@ -78,17 +93,43 @@ export const useFinanceStore = create<FinanceState>()(
                 expenseItems: state.expenseItems.filter(i => i.id !== id),
                 lastUpdated: new Date().toISOString()
             })),
+            addAsset: (item: NetWorthItem) => set((state: FinanceState) => ({
+                assetItems: [...state.assetItems, item],
+                lastUpdated: new Date().toISOString()
+            })),
+            removeAsset: (id: string) => set((state: FinanceState) => ({
+                assetItems: state.assetItems.filter(i => i.id !== id),
+                lastUpdated: new Date().toISOString()
+            })),
+            addLiability: (item: NetWorthItem) => set((state: FinanceState) => ({
+                liabilityItems: [...state.liabilityItems, item],
+                lastUpdated: new Date().toISOString()
+            })),
+            removeLiability: (id: string) => set((state: FinanceState) => ({
+                liabilityItems: state.liabilityItems.filter(i => i.id !== id),
+                lastUpdated: new Date().toISOString()
+            })),
             setUnlocked: (unlocked: boolean) => set({ isUnlocked: unlocked }),
             setCurrency: (currency: string) => set({ currency }),
             setPreferencesSet: (val: boolean) => set({ hasSetPreferences: val }),
-            duplicateItem: (id: string, type: 'income' | 'expense') => set((state: FinanceState) => {
-                const items = type === 'income' ? state.incomeItems : state.expenseItems;
+            duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability') => set((state: FinanceState) => {
+                let items: any[] = [];
+                if (type === 'income') items = state.incomeItems;
+                else if (type === 'expense') items = state.expenseItems;
+                else if (type === 'asset') items = state.assetItems;
+                else items = state.liabilityItems;
+
                 const item = items.find(i => i.id === id);
                 if (!item) return state;
                 const newItem = { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` };
-                return type === 'income'
-                    ? { incomeItems: [...state.incomeItems, newItem], lastUpdated: new Date().toISOString() }
-                    : { expenseItems: [...state.expenseItems, newItem], lastUpdated: new Date().toISOString() };
+
+                const update: any = { lastUpdated: new Date().toISOString() };
+                if (type === 'income') update.incomeItems = [...state.incomeItems, newItem];
+                else if (type === 'expense') update.expenseItems = [...state.expenseItems, newItem];
+                else if (type === 'asset') update.assetItems = [...state.assetItems, newItem];
+                else update.liabilityItems = [...state.liabilityItems, newItem];
+
+                return update;
             }),
             toggleTheme: () => set((state: FinanceState) => ({ darkMode: !state.darkMode })),
             toggleProjectionMode: () => set((state: FinanceState) => ({ isProjectionMode: !state.isProjectionMode })),
@@ -110,15 +151,19 @@ export const useFinanceStore = create<FinanceState>()(
             clearSession: () => set({
                 incomeItems: [],
                 expenseItems: [],
+                assetItems: [],
+                liabilityItems: [],
                 categoryMultipliers: {},
                 isProjectionMode: false,
                 currency: 'USD',
                 macroConfig: { inflation: 0, marketShock: 0 },
                 notification: null,
             }),
-            loadExampleTemplate: ({ income, expenses }) => set({
+            loadExampleTemplate: ({ income, expenses, assets, liabilities }) => set({
                 incomeItems: income,
                 expenseItems: expenses,
+                assetItems: assets || [],
+                liabilityItems: liabilities || [],
                 isProjectionMode: false,
                 currency: 'THB',
                 categoryMultipliers: {},
