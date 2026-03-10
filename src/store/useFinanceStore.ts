@@ -165,7 +165,6 @@ export const useFinanceStore = create<FinanceState>()(
                 assetItems: assets || [],
                 liabilityItems: liabilities || [],
                 isProjectionMode: false,
-                currency: 'THB',
                 categoryMultipliers: {},
                 macroConfig: { inflation: 0, marketShock: 0 },
                 lastUpdated: new Date().toISOString()

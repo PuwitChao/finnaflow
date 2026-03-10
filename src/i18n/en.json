@@ -176,8 +176,6 @@
         "exportSuccess": "Saved successfully",
         "templateSuccess": "Example template loaded",
         "templates": {
-            "income15000": "Monthly Income 15,000 THB",
-            "income30000": "Monthly Income 30,000 THB",
             "beginner": "Beginner",
             "standard": "Standard"
         },

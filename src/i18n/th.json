@@ -176,8 +176,6 @@
         "exportSuccess": "บันทึกสำเร็จ",
         "templateSuccess": "โหลดข้อมูลตัวอย่างสำเร็จ",
         "templates": {
-            "income15000": "รายได้ต่อเดือน 15,000 THB",
-            "income30000": "รายได้ต่อเดือน 30,000 THB",
             "beginner": "เริ่มต้น",
             "standard": "มาตรฐาน"
         },

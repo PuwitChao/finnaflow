@@ -622,45 +622,76 @@ function App() {
         event.target.value = '';
     };
 
-    const handleLoadTemplate = (type: 'income15000' | 'income30000') => {
+    // Approximate multipliers to convert THB base amounts to realistic local values
+    // Base currency is THB. E.g. 15,000 THB ≈ $420 USD
+    const currencyScale: Record<string, number> = {
+        THB: 1,
+        USD: 0.028,
+        EUR: 0.026,
+        GBP: 0.022,
+        JPY: 4.2,
+        CNY: 0.2,
+        INR: 2.35,
+        KRW: 37.5,
+        AUD: 0.043,
+        CAD: 0.039,
+        SGD: 0.038,
+    };
+
+    const scaleAmount = (thbAmount: number): number => {
+        const scale = currencyScale[store.currency] ?? 0.028;
+        const raw = thbAmount * scale;
+        // Round to a "clean" number based on magnitude
+        if (raw < 10) return Math.round(raw * 100) / 100;
+        if (raw < 100) return Math.round(raw / 5) * 5;
+        if (raw < 1000) return Math.round(raw / 50) * 50;
+        if (raw < 10000) return Math.round(raw / 500) * 500;
+        return Math.round(raw / 5000) * 5000;
+    };
+
+    const templateBeginnerIncome = scaleAmount(15000);
+    const templateStandardIncome = scaleAmount(30000);
+    const sym = getCurrencySymbol(store.currency);
+
+    const handleLoadTemplate = (type: 'beginner' | 'standard') => {
         let income: FinanceItem[];
         let expenses: FinanceItem[];
         let assets: any[] = [];
         let liabilities: any[] = [];
 
-        if (type === 'income15000') {
+        if (type === 'beginner') {
             income = [
-                { id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: 15000, frequency: 'Monthly', category: 'Needs' }
+                { id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: scaleAmount(15000), frequency: 'Monthly', category: 'Needs' }
             ];
             expenses = [
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Rent'), amount: 4500, frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Groceries'), amount: 3500, frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Fun'), amount: 1500, frequency: 'Monthly', category: 'Wants' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.emergencyFund'), amount: 1000, frequency: 'Monthly', category: 'Savings' }
+                { id: crypto.randomUUID(), name: t('inputs.expense.common.Rent'), amount: scaleAmount(4500), frequency: 'Monthly', category: 'Needs' },
+                { id: crypto.randomUUID(), name: t('inputs.expense.common.Groceries'), amount: scaleAmount(3500), frequency: 'Monthly', category: 'Needs' },
+                { id: crypto.randomUUID(), name: t('inputs.expense.common.Fun'), amount: scaleAmount(1500), frequency: 'Monthly', category: 'Wants' },
+                { id: crypto.randomUUID(), name: t('file.templateItems.emergencyFund'), amount: scaleAmount(1000), frequency: 'Monthly', category: 'Savings' }
             ];
             assets = [
-                { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: 25000, category: 'Cash' }
+                { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: scaleAmount(25000), category: 'Cash' }
             ];
         } else {
             income = [
-                { id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: 30000, frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.income.common.Dividends'), amount: 2500, frequency: 'Monthly', category: 'Investments' }
+                { id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: scaleAmount(30000), frequency: 'Monthly', category: 'Needs' },
+                { id: crypto.randomUUID(), name: t('inputs.income.common.Dividends'), amount: scaleAmount(2500), frequency: 'Monthly', category: 'Investments' }
             ];
             expenses = [
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Rent'), amount: 8000, frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Groceries'), amount: 5000, frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Transport'), amount: 2000, frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Shopping'), amount: 3000, frequency: 'Monthly', category: 'Wants' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.etfPortfolio'), amount: 4000, frequency: 'Monthly', category: 'Investments' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.retirementFund'), amount: 2500, frequency: 'Monthly', category: 'Savings' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.creditCardPayoff'), amount: 1500, frequency: 'Monthly', category: 'Debt' }
+                { id: crypto.randomUUID(), name: t('inputs.expense.common.Rent'), amount: scaleAmount(8000), frequency: 'Monthly', category: 'Needs' },
+                { id: crypto.randomUUID(), name: t('inputs.expense.common.Groceries'), amount: scaleAmount(5000), frequency: 'Monthly', category: 'Needs' },
+                { id: crypto.randomUUID(), name: t('inputs.expense.common.Transport'), amount: scaleAmount(2000), frequency: 'Monthly', category: 'Needs' },
+                { id: crypto.randomUUID(), name: t('inputs.expense.common.Shopping'), amount: scaleAmount(3000), frequency: 'Monthly', category: 'Wants' },
+                { id: crypto.randomUUID(), name: t('file.templateItems.etfPortfolio'), amount: scaleAmount(4000), frequency: 'Monthly', category: 'Investments' },
+                { id: crypto.randomUUID(), name: t('file.templateItems.retirementFund'), amount: scaleAmount(2500), frequency: 'Monthly', category: 'Savings' },
+                { id: crypto.randomUUID(), name: t('file.templateItems.creditCardPayoff'), amount: scaleAmount(1500), frequency: 'Monthly', category: 'Debt' }
             ];
             assets = [
-                { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: 50000, category: 'Cash' },
-                { id: crypto.randomUUID(), name: t('inputs.assets.common.Investments'), amount: 120000, category: 'Investments' }
+                { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: scaleAmount(50000), category: 'Cash' },
+                { id: crypto.randomUUID(), name: t('inputs.assets.common.Investments'), amount: scaleAmount(120000), category: 'Investments' }
             ];
             liabilities = [
-                { id: crypto.randomUUID(), name: t('inputs.liabilities.common.CarLoan'), amount: 250000, category: 'CarLoan' }
+                { id: crypto.randomUUID(), name: t('inputs.liabilities.common.CarLoan'), amount: scaleAmount(250000), category: 'CarLoan' }
             ];
         }
         store.loadExampleTemplate({ income, expenses, assets, liabilities });
@@ -731,14 +762,14 @@ function App() {
                             <span>{t('header.exampleTemplate')}</span>
                         </button>
                         {showTemplateMenu && (
-                            <div className="absolute right-0 top-full mt-4 apple-card rounded-[2rem] overflow-hidden z-[100] w-64 p-3 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <button onClick={() => handleLoadTemplate('income15000')} className="w-full p-4 text-left rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all flex items-center gap-4">
+                            <div className="absolute right-0 top-full mt-4 apple-card rounded-[2rem] overflow-hidden z-[100] w-72 p-3 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <button onClick={() => handleLoadTemplate('beginner')} className="w-full p-4 text-left rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white"><Wallet size={20} /></div>
-                                    <div className="flex flex-col"><span className="text-[10px] font-bold text-[#FF9500] uppercase tracking-wide">{t('file.templates.beginner')}</span><span className="text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7]">{t('file.templates.income15000')}</span></div>
+                                    <div className="flex flex-col"><span className="text-[10px] font-bold text-[#FF9500] uppercase tracking-wide">{t('file.templates.beginner')}</span><span className="text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7]">{sym}{templateBeginnerIncome.toLocaleString()}{t('projector.perMonth')}</span></div>
                                 </button>
-                                <button onClick={() => handleLoadTemplate('income30000')} className="w-full p-4 text-left rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all flex items-center gap-4">
+                                <button onClick={() => handleLoadTemplate('standard')} className="w-full p-4 text-left rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-[#AF52DE] flex items-center justify-center text-white"><Sparkles size={20} /></div>
-                                    <div className="flex flex-col"><span className="text-[10px] font-bold text-[#34C759] uppercase tracking-wide">{t('file.templates.standard')}</span><span className="text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7]">{t('file.templates.income30000')}</span></div>
+                                    <div className="flex flex-col"><span className="text-[10px] font-bold text-[#34C759] uppercase tracking-wide">{t('file.templates.standard')}</span><span className="text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7]">{sym}{templateStandardIncome.toLocaleString()}{t('projector.perMonth')}</span></div>
                                 </button>
                             </div>
                         )}
