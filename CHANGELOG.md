@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-03-12
+
+### Added
+
+- **🧠 Interactive Intelligence**:
+  - **Node Drill-Down**: Interactive Sankey nodes that reveal an itemized breakdown of financial data when clicked.
+  - **Smart Budget Nudging**: Logic-based pro-tips implementing the 50/30/20 rule to flag deviations in real-time.
+- **🌍 Enhanced Localization**: Detailed Thai and English support for interactive insights and drill-down metadata.
+
+### Fixed
+
+- **Type Safety**: Hardened the `react-plotly.js` type definitions and resolved linting errors in event handling.
+- **Interactive UI**: Fixed cursor behaviors and hover states for the visualization layer.
+
 ## [1.4.0] - 2026-03-10
 
 ### Added

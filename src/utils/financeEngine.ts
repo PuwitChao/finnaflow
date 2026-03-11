@@ -26,6 +26,13 @@ export const normalizeToMonthly = (amount: number, frequency: Frequency): number
 export interface SankeyData {
     /** Array of node labels. */
     nodes: string[];
+    /** Array of metadata for each node. */
+    nodeMetadata: {
+        type: 'debt' | 'wallet' | 'unallocated' | 'category' | 'income' | 'expense';
+        id?: string;
+        name?: string;
+        category?: string;
+    }[];
     /** Array of link objects defining the flow between nodes. */
     links: {
         source: number;
@@ -91,6 +98,12 @@ export const generateSankeyConfig = (
         '#059669', // 2: Unallocated
     ];
 
+    const nodeMetadata: SankeyData['nodeMetadata'] = [
+        { type: 'debt' },
+        { type: 'wallet' },
+        { type: 'unallocated' }
+    ];
+
     // 2. Identify Unique Categories
     const categories = Array.from(new Set(expenseItems.map(i => i.category)));
     const categoryNodeOffset = nodes.length;
@@ -108,6 +121,7 @@ export const generateSankeyConfig = (
         const translatedCat = t(`category.${cat}`);
         nodes.push(translatedCat === `category.${cat}` ? cat : translatedCat);
         nodeColors.push(catColorMap[cat] || '#94a3b8'); // Custom categories get Gray if not mapped
+        nodeMetadata.push({ type: 'category', category: cat });
     });
 
     // 3. Income Nodes
@@ -115,6 +129,7 @@ export const generateSankeyConfig = (
     incomeItems.forEach(item => {
         nodes.push(item.name);
         nodeColors.push('#10b981'); // Green for income sources
+        nodeMetadata.push({ type: 'income', id: item.id, name: item.name });
     });
 
     // 4. Expense Item Nodes
@@ -122,6 +137,7 @@ export const generateSankeyConfig = (
     expenseItems.forEach(item => {
         nodes.push(item.name);
         nodeColors.push(catColorMap[item.category] || '#94a3b8');
+        nodeMetadata.push({ type: 'expense', id: item.id, name: item.name, category: item.category });
     });
 
     const links: SankeyData['links'] = [];
@@ -201,5 +217,5 @@ export const generateSankeyConfig = (
         });
     });
 
-    return { nodes, links, nodeColors };
+    return { nodes, links, nodeColors, nodeMetadata };
 };

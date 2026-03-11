@@ -251,5 +251,10 @@
         "currency": "Display Currency",
         "continue": "Start Visualizing",
         "privacyNote": "All data is stored locally. No servers. No tracking."
+    },
+    "nudge": {
+        "needsHigh": "Your needs are above the recommended 50%. Consider auditing fixed costs like subscriptions or utilities.",
+        "wantsHigh": "Spending on wants exceeds 30%. Try the 48-hour rule for impulsive purchases.",
+        "savingsLow": "Savings are below 20%. Aim to automate a small increase in your monthly contributions."
     }
 }

@@ -3,6 +3,7 @@ import Plot from 'react-plotly.js';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { generateSankeyConfig } from '../../utils/financeEngine';
+import { DrillDownModal } from './DrillDownModal';
 
 /**
  * Interactive Sankey Diagram component powered by react-plotly.js.
@@ -11,6 +12,8 @@ import { generateSankeyConfig } from '../../utils/financeEngine';
 export const SankeyChart: React.FC = () => {
     const { incomeItems, expenseItems, darkMode, isProjectionMode, categoryMultipliers, macroConfig } = useFinanceStore();
     const { t } = useI18n();
+    const [selectedNodeIndex, setSelectedNodeIndex] = React.useState<number | null>(null);
+
     const config = generateSankeyConfig(
         incomeItems,
         expenseItems,
@@ -90,9 +93,24 @@ export const SankeyChart: React.FC = () => {
                     }
                 }}
                 config={{ displayModeBar: false }}
+                onClick={(data: any) => {
+                    const point = data?.points?.[0];
+                    if (point && typeof point.pointNumber === 'number') {
+                        setSelectedNodeIndex(point.pointNumber);
+                    }
+                }}
                 useResizeHandler={true}
-                className="w-full h-full"
+                className="w-full h-full cursor-pointer"
             />
+            {selectedNodeIndex !== null && config.nodeMetadata[selectedNodeIndex] && (
+                <DrillDownModal 
+                    node={{
+                        ...config.nodeMetadata[selectedNodeIndex],
+                        label: config.nodes[selectedNodeIndex]
+                    }}
+                    onClose={() => setSelectedNodeIndex(null)}
+                />
+            )}
         </div>
     );
 };

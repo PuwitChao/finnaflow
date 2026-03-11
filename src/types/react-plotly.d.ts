@@ -10,6 +10,8 @@ declare module 'react-plotly.js' {
         onUpdate?: (figure: unknown, graphDiv: HTMLElement) => void;
         onPurge?: (figure: unknown, graphDiv: HTMLElement) => void;
         onError?: (err: unknown) => void;
+        onClick?: (event: Readonly<unknown>) => void;
+        onHover?: (event: Readonly<unknown>) => void;
         style?: React.CSSProperties;
         className?: string;
         useResizeHandler?: boolean;
