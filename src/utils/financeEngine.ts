@@ -47,24 +47,16 @@ export interface SankeyData {
 
 /**
  * Generates the Sankey diagram configuration based on user income and expense items.
- * Implements sophisticated routing for surplus and deficit scenarios.
- * 
- * @param incomeItems - List of income sources from the store.
- * @param expenseItems - List of expense items from the store.
- * @param multipliers - Optional record of category-based multipliers.
- * @param macro - Optional macro config (inflation/marketShock).
- * @returns A structured SankeyData object for visualization.
  */
 export const generateSankeyConfig = (
     incomeItems: FinanceItem[],
     expenseItems: FinanceItem[],
     multipliers: Record<string, number> = {},
     macro: { inflation: number; marketShock: number } = { inflation: 0, marketShock: 0 },
-    t: (key: string) => string = (k) => k
+    t: (key: string) => string = (k) => k,
+    isPrivacyMode: boolean = false
 ): SankeyData => {
-    // Inflation factor (e.g. 0.05 -> 1.05)
     const infFactor = 1 + (macro.inflation / 100);
-    // Market factor (e.g. 20 -> 0.8)
     const mktFactor = 1 - (macro.marketShock / 100);
 
     const getProjectedIncome = (item: FinanceItem) => {
@@ -75,27 +67,24 @@ export const generateSankeyConfig = (
 
     const totalMonthlyIncome = incomeItems.reduce((acc, item) => acc + getProjectedIncome(item), 0);
 
-    // Internal helper to get projected amount
     const getProjectedAmount = (item: FinanceItem) => {
         const base = normalizeToMonthly(item.amount, item.frequency);
         const multiplier = multipliers[item.category] ?? 1;
-        // Apply inflation to expenses
         return base * multiplier * infFactor;
     };
 
     const totalMonthlyExpense = expenseItems.reduce((acc, item) => acc + getProjectedAmount(item), 0);
 
-    // 1. Initial Static Nodes
     const nodes = [
-        t('chart.nodes.debtSource'), // 0: Red
-        t('chart.nodes.wallet'),     // 1: Slate
-        t('chart.nodes.unallocated'),  // 2: Emerald
+        t('chart.nodes.debtSource'),
+        t('chart.nodes.wallet'),
+        t('chart.nodes.unallocated'),
     ];
 
     const nodeColors = [
-        '#ef4444', // 0: Debt Source
-        '#64748b', // 1: Total Wallet
-        '#059669', // 2: Unallocated
+        '#ef4444',
+        '#64748b',
+        '#059669',
     ];
 
     const nodeMetadata: SankeyData['nodeMetadata'] = [
@@ -104,35 +93,31 @@ export const generateSankeyConfig = (
         { type: 'unallocated' }
     ];
 
-    // 2. Identify Unique Categories
     const categories = Array.from(new Set(expenseItems.map(i => i.category)));
     const categoryNodeOffset = nodes.length;
 
     const catColorMap: Record<string, string> = {
-        'Needs': '#007AFF',     // System Blue
-        'Wants': '#FF3B30',     // System Red
-        'Savings': '#34C759',   // System Green
-        'Investments': '#AF52DE', // System Purple
-        'Debt': '#8E8E93',      // System Gray
+        'Needs': '#007AFF',
+        'Wants': '#FF3B30',
+        'Savings': '#34C759',
+        'Investments': '#AF52DE',
+        'Debt': '#8E8E93',
     };
 
     categories.forEach(cat => {
-        // Translate standard categories, keep custom as is
         const translatedCat = t(`category.${cat}`);
         nodes.push(translatedCat === `category.${cat}` ? cat : translatedCat);
-        nodeColors.push(catColorMap[cat] || '#94a3b8'); // Custom categories get Gray if not mapped
+        nodeColors.push(catColorMap[cat] || '#94a3b8');
         nodeMetadata.push({ type: 'category', category: cat });
     });
 
-    // 3. Income Nodes
     const incomeNodeOffset = nodes.length;
     incomeItems.forEach(item => {
         nodes.push(item.name);
-        nodeColors.push('#10b981'); // Green for income sources
+        nodeColors.push('#10b981');
         nodeMetadata.push({ type: 'income', id: item.id, name: item.name });
     });
 
-    // 4. Expense Item Nodes
     const expenseNodeOffset = nodes.length;
     expenseItems.forEach(item => {
         nodes.push(item.name);
@@ -142,7 +127,6 @@ export const generateSankeyConfig = (
 
     const links: SankeyData['links'] = [];
 
-    // Stage: Income -> Wallet
     incomeItems.forEach((item, index) => {
         links.push({
             source: incomeNodeOffset + index,
@@ -153,7 +137,6 @@ export const generateSankeyConfig = (
         });
     });
 
-    // Handle Deficit
     if (totalMonthlyExpense > totalMonthlyIncome) {
         links.push({
             source: 0,
@@ -164,7 +147,6 @@ export const generateSankeyConfig = (
         });
     }
 
-    // Stage: Wallet -> Categories (Pools)
     categories.forEach((cat, index) => {
         const catTotal = expenseItems
             .filter(i => i.category === cat)
@@ -186,7 +168,6 @@ export const generateSankeyConfig = (
         }
     });
 
-    // Handle Surplus -> Unallocated
     if (totalMonthlyIncome > totalMonthlyExpense) {
         links.push({
             source: 1,
@@ -197,7 +178,6 @@ export const generateSankeyConfig = (
         });
     }
 
-    // Stage: Categories -> Items
     expenseItems.forEach((item, index) => {
         const catIndex = categories.indexOf(item.category);
         const itemAmount = getProjectedAmount(item);
@@ -212,10 +192,61 @@ export const generateSankeyConfig = (
             source: categoryNodeOffset + catIndex,
             target: expenseNodeOffset + index,
             value: itemAmount,
-            label: `${item.name} (${percentage}%)`,
+            label: isPrivacyMode ? item.name : `${item.name} (${percentage}%)`,
             color: rgbaColor
         });
     });
 
     return { nodes, links, nodeColors, nodeMetadata };
+};
+
+/**
+ * Calculates a financial resilience score (0-100) based on budgeting best practices.
+ */
+export const calculateResilienceScore = (
+    incomeItems: FinanceItem[],
+    expenseItems: FinanceItem[],
+    assetItems: any[],
+    insuranceItems: any[] = []
+): number => {
+    const totalIncome = incomeItems.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+    const totalExpense = expenseItems.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+    if (totalIncome === 0) return 0;
+
+    const needs = expenseItems.filter(i => i.category === 'Needs').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+    const wants = expenseItems.filter(i => i.category === 'Wants').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+    const savings = expenseItems.filter(i => i.category === 'Savings' || i.category === 'Investments').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+
+    const savingsRate = savings / totalIncome;
+    const needsRate = needs / totalIncome;
+    const wantsRate = wants / totalIncome;
+
+    let score = 0;
+
+    // Savings Rate (Max 40 points, 20% savings = 40 points)
+    score += Math.min(savingsRate / 0.2 * 40, 40);
+
+    // Needs Rate (Max 30 points, <= 50% = 30 points)
+    if (needsRate <= 0.5) score += 30;
+    else score += Math.max(30 - (needsRate - 0.5) * 100, 0);
+
+    // Wants Rate (Max 20 points, <= 30% = 20 points)
+    if (wantsRate <= 0.3) score += 20;
+    else score += Math.max(20 - (wantsRate - 0.3) * 100, 0);
+
+    // Assets Buffer (Max 5 points - 3 months expenses = 5 points)
+    const totalAssets = assetItems.reduce((acc, i) => acc + (i.amount || 0), 0);
+    if (totalExpense > 0) {
+        const bufferMonths = totalAssets / totalExpense;
+        score += Math.min(bufferMonths / 3 * 5, 5);
+    }
+
+    // Insurance Bonus (Max 5 points - 1.25 pts per type)
+    const coveredTypes = new Set(insuranceItems.map(i => i.type));
+    const essentialTypes = ['Life', 'Health', 'Auto', 'Home'];
+    essentialTypes.forEach(t => {
+        if (coveredTypes.has(t)) score += 1.25;
+    });
+
+    return Math.round(score);
 };

@@ -21,21 +21,33 @@ export interface NetWorthItem {
     category: string;
 }
 
+export interface InsuranceItem {
+    id: string;
+    name: string;
+    type: 'Life' | 'Health' | 'Auto' | 'Home' | 'Other';
+    premium: number;
+    coverage: number;
+    frequency: Frequency;
+}
+
 interface FinanceState {
     incomeItems: FinanceItem[];
     expenseItems: FinanceItem[];
     assetItems: NetWorthItem[];
     liabilityItems: NetWorthItem[];
+    insuranceItems: InsuranceItem[];
     isUnlocked: boolean;
     darkMode: boolean;
     isProjectionMode: boolean;
+    isPrivacyMode: boolean;
     currency: string;
     categoryMultipliers: Record<string, number>;
     macroConfig: { inflation: number; marketShock: number };
     hasSetPreferences: boolean;
     lastUpdated: string | null;
+    togglePrivacyMode: () => void;
     setPreferencesSet: (val: boolean) => void;
-    duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability') => void;
+    duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability' | 'insurance') => void;
     addIncome: (item: FinanceItem) => void;
     removeIncome: (id: string) => void;
     addExpense: (item: FinanceItem) => void;
@@ -44,6 +56,8 @@ interface FinanceState {
     removeAsset: (id: string) => void;
     addLiability: (item: NetWorthItem) => void;
     removeLiability: (id: string) => void;
+    addInsurance: (item: InsuranceItem) => void;
+    removeInsurance: (id: string) => void;
     setUnlocked: (unlocked: boolean) => void;
     setCurrency: (currency: string) => void;
     toggleTheme: () => void;
@@ -54,7 +68,7 @@ interface FinanceState {
     notification: { message: string, type: 'info' | 'success' | 'error' } | null;
     showNotification: (message: string, type?: 'info' | 'success' | 'error') => void;
     clearSession: () => void;
-    loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[] }) => void;
+    loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[], insurance?: InsuranceItem[] }) => void;
 }
 
 /**
@@ -68,9 +82,11 @@ export const useFinanceStore = create<FinanceState>()(
             expenseItems: [],
             assetItems: [],
             liabilityItems: [],
+            insuranceItems: [],
             isUnlocked: true,
             darkMode: false,
             isProjectionMode: false,
+            isPrivacyMode: false,
             currency: 'USD',
             categoryMultipliers: {},
             macroConfig: { inflation: 0, marketShock: 0 },
@@ -109,15 +125,24 @@ export const useFinanceStore = create<FinanceState>()(
                 liabilityItems: state.liabilityItems.filter(i => i.id !== id),
                 lastUpdated: new Date().toISOString()
             })),
+            addInsurance: (item: InsuranceItem) => set((state: FinanceState) => ({
+                insuranceItems: [...state.insuranceItems, item],
+                lastUpdated: new Date().toISOString()
+            })),
+            removeInsurance: (id: string) => set((state: FinanceState) => ({
+                insuranceItems: state.insuranceItems.filter(i => i.id !== id),
+                lastUpdated: new Date().toISOString()
+            })),
             setUnlocked: (unlocked: boolean) => set({ isUnlocked: unlocked }),
             setCurrency: (currency: string) => set({ currency }),
             setPreferencesSet: (val: boolean) => set({ hasSetPreferences: val }),
-            duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability') => set((state: FinanceState) => {
+            duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability' | 'insurance') => set((state: FinanceState) => {
                 let items: any[] = [];
                 if (type === 'income') items = state.incomeItems;
                 else if (type === 'expense') items = state.expenseItems;
                 else if (type === 'asset') items = state.assetItems;
-                else items = state.liabilityItems;
+                else if (type === 'liability') items = state.liabilityItems;
+                else items = state.insuranceItems;
 
                 const item = items.find(i => i.id === id);
                 if (!item) return state;
@@ -127,12 +152,14 @@ export const useFinanceStore = create<FinanceState>()(
                 if (type === 'income') update.incomeItems = [...state.incomeItems, newItem];
                 else if (type === 'expense') update.expenseItems = [...state.expenseItems, newItem];
                 else if (type === 'asset') update.assetItems = [...state.assetItems, newItem];
-                else update.liabilityItems = [...state.liabilityItems, newItem];
+                else if (type === 'liability') update.liabilityItems = [...state.liabilityItems, newItem];
+                else update.insuranceItems = [...state.insuranceItems, newItem];
 
                 return update;
             }),
             toggleTheme: () => set((state: FinanceState) => ({ darkMode: !state.darkMode })),
             toggleProjectionMode: () => set((state: FinanceState) => ({ isProjectionMode: !state.isProjectionMode })),
+            togglePrivacyMode: () => set((state: FinanceState) => ({ isPrivacyMode: !state.isPrivacyMode })),
             setCategoryMultiplier: (category: string, value: number) =>
                 set((state: FinanceState) => ({
                     categoryMultipliers: { ...state.categoryMultipliers, [category]: value }
@@ -153,18 +180,22 @@ export const useFinanceStore = create<FinanceState>()(
                 expenseItems: [],
                 assetItems: [],
                 liabilityItems: [],
+                insuranceItems: [],
                 categoryMultipliers: {},
                 isProjectionMode: false,
+                isPrivacyMode: false,
                 currency: 'USD',
                 macroConfig: { inflation: 0, marketShock: 0 },
                 notification: null,
             }),
-            loadExampleTemplate: ({ income, expenses, assets, liabilities }) => set({
+            loadExampleTemplate: ({ income, expenses, assets, liabilities, insurance }) => set({
                 incomeItems: income,
                 expenseItems: expenses,
                 assetItems: assets || [],
                 liabilityItems: liabilities || [],
+                insuranceItems: insurance || [],
                 isProjectionMode: false,
+                isPrivacyMode: false,
                 categoryMultipliers: {},
                 macroConfig: { inflation: 0, marketShock: 0 },
                 lastUpdated: new Date().toISOString()

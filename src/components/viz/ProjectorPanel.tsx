@@ -3,12 +3,14 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { Sliders, X, TrendingUp, TrendingDown, Info } from 'lucide-react';
 import { getCurrencySymbol } from '../../utils/currencies';
-import { normalizeToMonthly } from '../../utils/financeEngine';
+import { normalizeToMonthly, calculateResilienceScore } from '../../utils/financeEngine';
 
 export const ProjectorPanel: React.FC = () => {
     const {
         expenseItems,
         incomeItems,
+        assetItems,
+        insuranceItems,
         isProjectionMode,
         toggleProjectionMode,
         categoryMultipliers,
@@ -16,7 +18,8 @@ export const ProjectorPanel: React.FC = () => {
         macroConfig,
         setMacroConfig,
         applyPreset,
-        currency
+        currency,
+        isPrivacyMode
     } = useFinanceStore();
     const { t } = useI18n();
 
@@ -54,12 +57,18 @@ export const ProjectorPanel: React.FC = () => {
     }, 0);
 
     const surplus = projectedIncome - projectedExpense;
-    const surplusPercent = projectedIncome > 0 ? (surplus / projectedIncome) * 100 : 0;
+    const score = calculateResilienceScore(incomeItems, expenseItems, assetItems, insuranceItems);
 
-    let verdict = { label: 'Resilient', color: 'text-[#34C759]', bg: 'bg-[#34C759]/10', icon: <TrendingUp className="w-4 h-4" /> };
-    if (surplusPercent <= 0) {
+    let verdict = { 
+        label: 'Resilient', 
+        color: 'text-[#34C759]', 
+        bg: 'bg-[#34C759]/10', 
+        icon: <TrendingUp className="w-4 h-4" /> 
+    };
+
+    if (score < 40) {
         verdict = { label: 'Critical', color: 'text-[#FF3B30]', bg: 'bg-[#FF3B30]/10', icon: <TrendingDown className="w-4 h-4" /> };
-    } else if (surplusPercent < 10) {
+    } else if (score < 70) {
         verdict = { label: 'Strained', color: 'text-[#FF9500]', bg: 'bg-[#FF9500]/10', icon: <Info className="w-4 h-4" /> };
     }
 
@@ -82,11 +91,11 @@ export const ProjectorPanel: React.FC = () => {
                 <div className="flex items-center gap-2">
                     <span className={verdict.color}>{verdict.icon}</span>
                     <span className={`text-xs font-bold tracking-tight ${verdict.color}`}>
-                        {t(`resilience.${verdict.label}`)}
+                        {t(`resilience.${verdict.label}`)} ({score}/100)
                     </span>
                 </div>
                 <span className={`text-xs font-bold ${verdict.color}`}>
-                    {getCurrencySymbol(currency)}{surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}{t('projector.perMonth')}
+                    {getCurrencySymbol(currency)}{isPrivacyMode ? '•••••' : surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}{t('projector.perMonth')}
                 </span>
             </div>
 

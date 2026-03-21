@@ -5,14 +5,20 @@ import { SankeyChart } from './components/viz/SankeyChart';
 import { ProjectorPanel } from './components/viz/ProjectorPanel';
 import { AppGuide } from './components/layout/AppGuide';
 import { WikiPage } from './components/layout/WikiPage';
+import { InsuranceAudit } from './components/viz/InsuranceAudit';
 import { exportToCSV, parseCSV } from './utils/csvProcessor';
 import { getCurrencySymbol, SUPPORTED_CURRENCIES } from './utils/currencies';
-import { Plus, Trash2, Wallet, PieChart, Activity, Sun, Moon, RefreshCw, LogOut, Globe, Download, Upload, FileText, HelpCircle, Coins, Sparkles, ChevronDown, ShieldCheck, Copy, Calendar } from 'lucide-react';
+import { Plus, Trash2, Wallet, PieChart, Activity, Sun, Moon, RefreshCw, LogOut, Globe, Download, Upload, FileText, HelpCircle, Coins, Sparkles, ChevronDown, ShieldCheck, Copy, Calendar, Eye, EyeOff } from 'lucide-react';
 
 const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
-    const { incomeItems, expenseItems, addIncome, addExpense, removeIncome, removeExpense, showNotification, currency, duplicateItem } = useFinanceStore();
+    const { incomeItems, expenseItems, addIncome, addExpense, removeIncome, removeExpense, showNotification, currency, duplicateItem, isPrivacyMode } = useFinanceStore();
     const { t } = useI18n();
     const symbol = getCurrencySymbol(currency);
+
+    const formatAmount = (val: number) => {
+        if (isPrivacyMode) return '•••••';
+        return val.toLocaleString();
+    };
 
     const items = type === 'income' ? incomeItems : expenseItems;
     const onAdd = type === 'income' ? addIncome : addExpense;
@@ -174,7 +180,7 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
                             <div className="flex flex-col">
                                 <span className="font-semibold text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7]">{item.name}</span>
                                 <div className="flex items-center gap-3 mt-1.5">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{symbol}{item.amount.toLocaleString()} / {t(`frequency.${item.frequency}`)}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{symbol}{formatAmount(item.amount)} / {t(`frequency.${item.frequency}`)}</span>
                                     <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold border ${item.category === 'Needs' ? 'bg-blue-50 text-blue-500 border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/20' :
                                         item.category === 'Wants' ? 'bg-rose-50 text-rose-500 border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20' :
                                             item.category === 'Savings' ? 'bg-emerald-50 text-emerald-500 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20' :
@@ -197,7 +203,7 @@ const FinanceInput = ({ type }: { type: 'income' | 'expense' }) => {
 };
 
 const NetWorthInput = ({ type }: { type: 'asset' | 'liability' }) => {
-    const { assetItems, liabilityItems, addAsset, addLiability, removeAsset, removeLiability, showNotification, currency, duplicateItem } = useFinanceStore();
+    const { assetItems, liabilityItems, addAsset, addLiability, removeAsset, removeLiability, showNotification, currency, duplicateItem, isPrivacyMode } = useFinanceStore();
     const { t } = useI18n();
     const symbol = getCurrencySymbol(currency);
 
@@ -335,7 +341,7 @@ const NetWorthInput = ({ type }: { type: 'asset' | 'liability' }) => {
                         >
                             <div className="flex flex-col">
                                 <span className="font-semibold text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7]">{item.name}</span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{symbol}{item.amount.toLocaleString()}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{symbol}{isPrivacyMode ? '•••••' : item.amount.toLocaleString()}</span>
                             </div>
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
@@ -361,9 +367,11 @@ const NetWorthInput = ({ type }: { type: 'asset' | 'liability' }) => {
 };
 
 const NetWorthCard = () => {
-    const { assetItems, liabilityItems, currency } = useFinanceStore();
+    const { assetItems, liabilityItems, currency, isPrivacyMode } = useFinanceStore();
     const { t } = useI18n();
     const symbol = getCurrencySymbol(currency);
+
+    const formatValue = (val: number) => isPrivacyMode ? '•••••' : val.toLocaleString();
 
     const totalAssets = assetItems.reduce((acc, i) => acc + i.amount, 0);
     const totalLiabilities = liabilityItems.reduce((acc, i) => acc + i.amount, 0);
@@ -385,8 +393,8 @@ const NetWorthCard = () => {
                     </div>
                     <div>
                         <p className="text-gray-500 text-sm font-semibold mb-2">{t('inputs.netWorth.currentNetWorth')}</p>
-                        <h2 className={`text-4xl sm:text-6xl font-black transition-colors ${netWorth >= 0 ? 'text-white' : 'text-rose-500'}`}>
-                            {symbol}{netWorth.toLocaleString()}
+                        <h2 className={`text-4xl sm:text-6xl font-black transition-all ${isPrivacyMode ? 'blur-sm' : ''} ${netWorth >= 0 ? 'text-white' : 'text-rose-500'}`}>
+                            {symbol}{formatValue(netWorth)}
                         </h2>
                     </div>
                     <div className="flex gap-4 pt-2">
@@ -400,14 +408,14 @@ const NetWorthCard = () => {
                 <div className="grid grid-cols-2 gap-4 w-full sm:w-auto">
                     <div className="apple-card !bg-white/5 !border-white/5 p-6 rounded-3xl space-y-2 text-center sm:text-left min-w-[160px]">
                         <p className="text-[11px] font-bold text-gray-500 uppercase tracking-tighter">{t('inputs.netWorth.totalAssets')}</p>
-                        <p className="text-2xl font-bold text-white">{symbol}{totalAssets.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-white">{symbol}{formatValue(totalAssets)}</p>
                         <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden mt-3">
                             <div className="h-full bg-emerald-500" style={{ width: '100%' }} />
                         </div>
                     </div>
                     <div className="apple-card !bg-white/5 !border-white/5 p-6 rounded-3xl space-y-2 text-center sm:text-left min-w-[160px]">
                         <p className="text-[11px] font-bold text-gray-500 uppercase tracking-tighter">{t('inputs.netWorth.totalLiabilities')}</p>
-                        <p className="text-2xl font-bold text-rose-500">{symbol}{totalLiabilities.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-rose-500">{symbol}{formatValue(totalLiabilities)}</p>
                         <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden mt-3">
                             <div className="h-full bg-rose-500" style={{ width: `${Math.min((totalLiabilities / Math.max(totalAssets, 1)) * 100, 100)}%` }} />
                         </div>
@@ -511,6 +519,7 @@ function App() {
     const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
     const [showTemplateMenu, setShowTemplateMenu] = useState(false);
     const [view, setView] = useState<'dashboard' | 'wiki'>('dashboard');
+    const [netWorthTab, setNetWorthTab] = useState<'composition' | 'insurance'>('composition');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const csvInputRef = useRef<HTMLInputElement>(null);
     const headerRef = useRef<HTMLDivElement>(null);
@@ -754,6 +763,14 @@ function App() {
                             )}
                         </div>
                         <button onClick={toggleTheme} className="apple-icon-btn" title={t('inputs.hints.theme')}>{darkMode ? <Sun size={19} /> : <Moon size={19} />}</button>
+                        <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                        <button 
+                            onClick={store.togglePrivacyMode} 
+                            className={`apple-icon-btn ${store.isPrivacyMode ? 'text-[#007AFF] bg-[#007AFF]/10 scale-110' : ''}`} 
+                            title="Toggle Privacy Mode"
+                        >
+                            {store.isPrivacyMode ? <EyeOff size={19} /> : <Eye size={19} />}
+                        </button>
                     </div>
 
                     <div className="relative">
@@ -799,10 +816,19 @@ function App() {
 
                         <NetWorthCard />
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
-                            <NetWorthInput type="asset" />
-                            <NetWorthInput type="liability" />
+                        <div className="flex gap-4 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl mb-8 w-fit">
+                            <button onClick={() => setNetWorthTab('composition')} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${netWorthTab === 'composition' ? 'bg-white dark:bg-white/10 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Net Worth</button>
+                            <button onClick={() => setNetWorthTab('insurance')} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${netWorthTab === 'insurance' ? 'bg-white dark:bg-white/10 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Insurance Audit</button>
                         </div>
+
+                        {netWorthTab === 'composition' ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
+                                <NetWorthInput type="asset" />
+                                <NetWorthInput type="liability" />
+                            </div>
+                        ) : (
+                            <InsuranceAudit />
+                        )}
                     </section>
                     <section className="apple-card p-6 sm:p-12 md:p-20 rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden transition-all duration-700 relative">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-10 mb-10 sm:mb-20 relative z-10">

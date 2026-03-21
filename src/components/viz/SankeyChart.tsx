@@ -10,7 +10,7 @@ import { DrillDownModal } from './DrillDownModal';
  * Visualizes the flow from income sources through hubs to specific expenses or surplus.
  */
 export const SankeyChart: React.FC = () => {
-    const { incomeItems, expenseItems, darkMode, isProjectionMode, categoryMultipliers, macroConfig } = useFinanceStore();
+    const { incomeItems, expenseItems, darkMode, isProjectionMode, isPrivacyMode, categoryMultipliers, macroConfig } = useFinanceStore();
     const { t } = useI18n();
     const [selectedNodeIndex, setSelectedNodeIndex] = React.useState<number | null>(null);
 
@@ -19,7 +19,8 @@ export const SankeyChart: React.FC = () => {
         expenseItems,
         isProjectionMode ? categoryMultipliers : {},
         isProjectionMode ? macroConfig : { inflation: 0, marketShock: 0 },
-        t
+        t,
+        isPrivacyMode
     );
 
     if (config.links.length === 0) {
