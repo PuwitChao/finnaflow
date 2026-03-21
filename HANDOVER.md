@@ -1,56 +1,49 @@
-# Project Status & Handover Report - v1.3.0
+# Project Status & Handover Report - v1.5.0
 
-This document summarizes the current state of **FinnaFlow** as of February 22, 2026, following the major UI/UX overhaul and localization audit.
+This document summarizes the current state of **FinnaFlow** as of March 21, 2026, following the "Privacy & Security" sprint.
 
-## 📍 Current State: "Golden Master" for Deployment
-The application has been fully audited for visual quality, technical stability, and localization naturalness. It is currently ready for production deployment to GitHub Pages.
+## 📍 Current State: "Safe Harbor" Release
+The application has been elevated from a simple visualizer to a security-conscious financial health auditor. It is fully deployed and verified on GitHub Pages.
 
-### 🎨 1. UI/UX Transformation (Apple HI Inspired)
-The interface has transitioned from a generic dashboard to a premium, high-fidelity financial utility.
-- **Glassmorphism Design**: All main containers now use `.apple-card` with `backdrop-blur-2xl` and soft shadows (fixed PostCSS errors).
-- **Typography**: Unified using `Inter`. Removed all heavy/condensed weights for a more expansive, professional feel.
-- **Color System**: Switched category colors to official Apple HIG System Colors (Blue/Green/Red/Purple/Indigo) for high contrast and visual harmony.
-- **Interactive HUD**: The "Resilience Engine" (Projector Panel) has been redesigned to feel like a native iOS Control Center widget.
+### 🛡️ 1. Privacy Shield & Social Sharing
+Implemented a "blinder" system designed for the 2025 sharing economy (Reddit/X/Discord).
+- **Redaction Logic**: One-click global toggle masks all absolute currency values.
+- **Visual Privacy**: The Net Worth summary uses high-fidelity Gaussian blur (`blur-sm`) to hide exact wealth while maintaining the dashboard's premium aesthetic.
+- **Diagram Sanitization**: Link labels in the Sankey diagram automatically omit percentage breakdowns when privacy is active.
 
-### 🌐 2. Localization & Copy Audit
-- **Full Numeric Formatting**: Removed all "k" shorthand. Thousands are now displayed in full (e.g., `1,000`, `30,000`) for professional clarity.
-- **Intuitive Language**: Replaced technical "Pipeline" terms with **"Cash Flow"** and refined "Deficit" descriptions for general users.
-- **Thai Refinement**: Audited the entire Thai translation. 
-    - Used **"ต่อเดือน"** (per month) consistently.
-    - Simplified technical jargon into natural, native phrasing.
-- **Punctuation Cleanliness**: Removed all em dashes (`—`) across all languages to match a cleaner minimalistic aesthetic.
+### 🏥 2. Insurance Health Audit
+A major functional expansion into risk management.
+- **Policy Tracking**: New dedicated management layer for Life, Health, Auto, and Home insurance.
+- **Gap Analysis**: Visual "Coverage Health" indicators that flag missing essential protections.
+- **Integration**: Insurance status now natively feeds into the global Resilience Score (below).
 
-### ⚙️ 3. Technical Stability & Build
-- **PostCSS Fixes**: Resolved variable parsing errors in `index.css` by moving complex shadows to standard CSS.
-- **ESLint Clean**: The project passes a strict `npm run lint` with **0 errors and 0 warnings**. Unused imports and variables have been purged.
-- **Vite Config**: Set `base: './'` to allow flexible hosting paths (root or subdirectory).
-- **Expanded Templates**: The "Example Templates" now include a full financial ecosystem (Needs, Wants, Savings, Investments, and Debt) to show off chart capabilities.
+### 📈 3. Financial Resilience Score (AI-Ready v1)
+A 0-100 proprietary metric that evaluates the user's "Financial IQ" and safety net:
+- **50/30/20 Rule Check**: Real-time evaluation of Needs vs. Wants.
+- **Savings Velocity**: Rewards high-percentage savings rates.
+- **Resilience Factors**: Weights emergency buffers (Assets / Monthly Expense) and active Insurance coverage.
+- **Projection Integration**: The score updates dynamically in the "Projection Hub" as users simulate market crashes or lifestyle changes.
 
-## 🛠️ Where We Left Off (Pending/Future)
-1. **Asset Finalization**: I have created a custom, professional **logo.svg** in the `public/` folder. This replaces the default Vite icon and serves as the brand's primary visual identity.
-2. **Advanced Export**: While CSV/JSON export is functional, adding a "Save as PDF" for the Sankey diagram would be a great "Pro" feature.
-3. **Template Library**: Consider a more diverse library of templates (e.g., "Retirement Planning", "Freelancer Life", "Debt Snowball").
-4. **Performance**: For extremely large datasets (100+ items), the Sankey chart rendering might benefit from further optimization, though current performance is excellent for 99% of use cases.
+### 🚀 4. CI/CD & Build Optimization
+- **GitHub Actions**: Configured `.github/workflows/deploy.yml` for automated deployment to GitHub Pages on every push to `main`.
+- **Version Bump**: Full project bump to **v1.5.0**.
+- **PWA Assets**: Verified PWA manifest consistency for mobile "Add to Home Screen" support.
+
+## 🛠️ Where We Left Off (Next Session Goals)
+1. **Local Oracle (Insights v2)**: Implement heuristic-based NLP "hints" that explain *why* a score is low (e.g., "Your emergency fund is below the 3-month safety threshold").
+2. **Time-Capsule Histograms**: Enable periodic snapshotting of net worth to visualize historical growth trends without requiring a database.
+3. **Advanced Share Hub**: Add "Save as PNG" and "Export to PDF" specifically for high-resolution Sankey diagram preservation.
 
 ## 📝 Action Items & Reminders
 
 ### For the USER (Manual Steps)
-- **[✔] Generate Native Assets**: Created **logo.svg**. You should convert this SVG to PNG sizes (192, 512) for full PWA support (offline/mobile app icons).
-- **[ ] GitHub Setup**: Create a repository on GitHub and update the `git clone` URL in `README.md` if sharing with others.
-- **[ ] Branch Configuration**: Set your GitHub repository to serve from the `gh-pages` branch (usually under Settings > Pages).
+- **[✔] Verified Push**: Git push to `origin main` is successful.
+- **[ ] Asset Audit**: Confirm that the PWA icons (logo.svg) render correctly on your specific mobile device after deployment.
 
 ### For the AI (Future Iterations)
-- **[ ] Multi-Currency Expansion**: Implement real-time rate fetching and per-item currency overrides.
-- **[ ] Advanced Visuals**: Add "Save as PDF" and "Screenshot" functionality for the Sankey diagrams.
-- **[ ] Smart Templates**: Create an expanded library of financial scenarios (e.g., student loans, FIRE planning).
-
-## 🚀 Deployment Instructions
-A new automated workflow has been created at:
-`.agent/workflows/final-audit-deployment.md`
-
-1. Run `npm run build`
-2. Push the `dist/` folder to the `gh-pages` branch.
-3. Your premium financial visualizer is live!
+- **[ ] Logic Audit**: Consider refining the "Debt" weighting in the Resilience Score (e.g., distinguish between productive debt like mortgages and high-interest credit cards).
+- **[ ] Dashboard Widgets**: Add "Health Gauges" for individual score categories (Savings, Housing, Burn Rate).
 
 ---
 *Signed, Antigravity*
+*2026-03-21*

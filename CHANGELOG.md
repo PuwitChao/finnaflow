@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-03-21
+
+### Added
+
+- **🛡️ Privacy & Security (Premium 2025 Features)**:
+  - **Privacy Shield Mode**: Global toggle to mask financial amounts and blur sensitive figures for social sharing.
+  - **Insurance Health Audit**: Dedicated module to track policy coverage (Life, Health, Auto, Home) and analyze protection gaps.
+  - **Financial Resilience Score**: Sophisticated 0-100 logic evaluating emergency buffers, the 50/30/20 rule, and insurance health.
+- **🚀 Automated Deployment**: Configured GitHub Actions CI/CD pipeline for seamless deployment to GitHub Pages.
+
 ## [1.4.1] - 2026-03-12
 
 ### Added
