@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-03-24
+
+### Changed
+
+- **🏗️ Architecture Overhaul**: Refactored the monolithic `App.tsx` into modular components.
+  - Extracted `FinanceInput`, `NetWorthInput`, and `NetWorthCard` to dedicated finance modules.
+  - Modularized `Header`, `Footer`, and `OnboardingOverlay` for better maintainability.
+- **🧹 Codebase Cleanup**: Removed legacy documentation and utility scripts from the repository.
+- **🏷️ Standardized Versioning**: Realigned project version to v2.1.0 to reflect major architectural improvements.
+
 ## [1.5.0] - 2026-03-21
 
 ### Added
