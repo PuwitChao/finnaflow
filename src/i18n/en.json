@@ -122,7 +122,21 @@
                 "Wealthy": "High Equity",
                 "Stable": "Balanced",
                 "Strained": "High Debt"
-            }
+            },
+            "wealthDashboard": "Wealth Dashboard",
+            "wealthSubtitle": "Track your global assets, liabilities, and financial resilience in real-time.",
+            "planFire": "Plan FIRE Milestone",
+            "proTipTitle": "Pro Tip: Diversify your entries",
+            "proTipContent": "Assets are more than just cash. Include stocks, physical property, or even valuable digital collectibles to get a true picture of your net worth.",
+            "totalWealthBaseline": "Total Wealth Baseline",
+            "growth": "Growth",
+            "resilienceLevel": "Resilience Level",
+            "high": "High",
+            "leverageRatio": "Leverage Ratio",
+            "securityPercentile": "98th Percentile Security",
+            "goodStanding": "Good Standing",
+            "activeDebt": "Active Debt",
+            "quickAdd": "Quick Add"
         }
     },
     "frequency": {

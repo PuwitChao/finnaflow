@@ -10,7 +10,7 @@ interface HeaderProps {
     onNewSession: () => void;
     onCSVExport: () => void;
     onCSVImportClick: () => void;
-    onViewToggle: (view: 'dashboard' | 'wiki') => void;
+    onViewToggle: (view: 'dashboard' | 'wiki' | 'networth') => void;
     onLoadTemplate: (type: 'beginner' | 'standard') => void;
     showLangMenu: boolean;
     setShowLangMenu: (show: boolean) => void;
@@ -89,6 +89,8 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1 p-1 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/5">
+                    <button onClick={() => onViewToggle('networth')} className="apple-icon-btn" title={t('inputs.hints.networth')}><Coins size={19} /></button>
+                    <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
                     <button onClick={() => onViewToggle('wiki')} className="apple-icon-btn" title={t('inputs.hints.wiki')}><HelpCircle size={19} /></button>
                     <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
                     <div className="relative">

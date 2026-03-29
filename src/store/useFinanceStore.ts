@@ -68,6 +68,8 @@ interface FinanceState {
     notification: { message: string, type: 'info' | 'success' | 'error' } | null;
     showNotification: (message: string, type?: 'info' | 'success' | 'error') => void;
     clearSession: () => void;
+    getTotalAssets: () => number;
+    getTotalLiabilities: () => number;
     loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[], insurance?: InsuranceItem[] }) => void;
 }
 
@@ -77,7 +79,7 @@ interface FinanceState {
  */
 export const useFinanceStore = create<FinanceState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             incomeItems: [],
             expenseItems: [],
             assetItems: [],
@@ -175,6 +177,12 @@ export const useFinanceStore = create<FinanceState>()(
                 set({ notification: { message, type } });
                 setTimeout(() => set({ notification: null }), 3000);
             },
+            getTotalAssets: () => {
+                return (get().assetItems || []).reduce((acc, item) => acc + item.amount, 0);
+            },
+            getTotalLiabilities: () => {
+                return (get().liabilityItems || []).reduce((acc, item) => acc + item.amount, 0);
+            },
             clearSession: () => set({
                 incomeItems: [],
                 expenseItems: [],
@@ -188,7 +196,7 @@ export const useFinanceStore = create<FinanceState>()(
                 macroConfig: { inflation: 0, marketShock: 0 },
                 notification: null,
             }),
-            loadExampleTemplate: ({ income, expenses, assets, liabilities, insurance }) => set({
+            loadExampleTemplate: ({ income, expenses, assets, liabilities, insurance }: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[], insurance?: InsuranceItem[] }) => set({
                 incomeItems: income,
                 expenseItems: expenses,
                 assetItems: assets || [],

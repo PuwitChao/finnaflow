@@ -16,6 +16,7 @@ import { NetWorthCard } from './components/finance/NetWorthCard';
 import { OnboardingOverlay } from './components/layout/OnboardingOverlay';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { NetWorthTab } from './components/finance/NetWorthTab';
 
 function App() {
     const store = useFinanceStore();
@@ -26,7 +27,7 @@ function App() {
     const [showLangMenu, setShowLangMenu] = useState(false);
     const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
     const [showTemplateMenu, setShowTemplateMenu] = useState(false);
-    const [view, setView] = useState<'dashboard' | 'wiki'>('dashboard');
+    const [view, setView] = useState<'dashboard' | 'wiki' | 'networth'>('dashboard');
     const [netWorthTab, setNetWorthTab] = useState<'composition' | 'insurance'>('composition');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const csvInputRef = useRef<HTMLInputElement>(null);
@@ -178,9 +179,9 @@ function App() {
             ];
             assets = [
                 { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: scaleAmount(50000), category: 'Cash' },
-                { id: crypto.randomUUID(), name: t('inputs.assets.common.Investments'), amount: scaleAmount(120000), category: 'Investments' }
+                { id: crypto.randomUUID(), name: t('inputs.assets.common.Investments'), amount: scaleAmount(120000), category: 'Stocks' }
             ];
-            liabilities = [{ id: crypto.randomUUID(), name: t('inputs.liabilities.common.CarLoan'), amount: scaleAmount(250000), category: 'CarLoan' }];
+            liabilities = [{ id: crypto.randomUUID(), name: t('inputs.liabilities.common.CarLoan'), amount: scaleAmount(250000), category: 'Car Loan' }];
         }
         store.loadExampleTemplate({ income, expenses, assets, liabilities });
         store.showNotification(t('file.templateSuccess'), 'success');
@@ -213,6 +214,10 @@ function App() {
 
             {view === 'wiki' ? (
                 <WikiPage onBack={() => setView('dashboard')} />
+            ) : view === 'networth' ? (
+                <main className="max-w-7xl mx-auto pb-16 sm:pb-32">
+                    <NetWorthTab />
+                </main>
             ) : (
                 <main className="max-w-7xl mx-auto space-y-12 sm:space-y-24 pb-16 sm:pb-32">
                     <AppGuide />
