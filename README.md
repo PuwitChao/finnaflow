@@ -1,6 +1,6 @@
 # FinnaFlow
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](https://github.com/PuwitChao/finnaflow)
+[![Version](https://img.shields.io/badge/version-2.2.0--Alpha-blue.svg)](https://github.com/PuwitChao/finnaflow)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 FinnaFlow is a privacy-focused financial visualization tool that aggregates income and expense streams into an interactive Sankey diagram. By mapping cash flow through a centralized "Wallet Hub" into categorized pools, it provides a structural view of personal budgeting based on the 50/30/20 rule.
@@ -19,7 +19,8 @@ FinnaFlow was developed as a personal free-time project to solve a specific need
 - **Dynamic Cash Flow Visualization**: Real-time rendering of financial pipelines using `react-plotly.js`. The engine handles automatic re-averaging of Weekly, Monthly, and Yearly data into a unified monthly distribution.
 - **Scenario Projection (Resilience Engine)**: A dedicated simulation sandbox to stress-test financial resilience against inflation (cost-of-living increases) and market shocks (dividend/investment volatility).
 - **Comprehensive Device Support**: Fully responsive layout optimized for iPhone, iPad, and Desktop viewports, incorporating safe-area handling for mobile notched devices.
-- **Built-in Documentation**: An integrated Wiki providing guidance on data structures, CSV bulk importing, and the underlying budgeting logic.
+- **Intelligent Ingestion (Batch Paste)**: Semi-automated transaction extraction using a local heuristic engine. Supports natural language and bank statement formats (K PLUS, SCB, GrabPay).
+- **Built-in Interactive User Guide**: A high-fidelity, native React documentation view explaining advanced features and financial concepts.
 - **PWA Capabilities**: Service-worker integration allowing the tool to be installed as a standalone application on supported browsers.
 
 ## Technical Implementation
@@ -35,6 +36,7 @@ FinnaFlow was developed as a personal free-time project to solve a specific need
 
 - **Phantom State Logic**: The simulation mode (Scenario Projector) uses a decoupled state logic. Multipliers and stress-test factors are applied to a derived state, ensuring the user's core financial data remains untampered during "What-If" planning.
 - **Normalization Engine**: Every input is normalized to a 4.33-week monthly average or a 12-month yearly average to maintain mathematical consistency across the diagram nodes.
+- **Modular Component Architecture**: Decoupled UI logic organized into domain-specific subdirectories (`finance/`, `layout/`, `viz/`) for maximum maintainability.
 - **i18n Implementation**: Natural language localization for English and Thai, avoiding machine translation in favor of native financial terminology.
 
 ## Getting Started

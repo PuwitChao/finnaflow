@@ -1,49 +1,43 @@
-# Project Status & Handover Report - v1.5.0
+# FinnaFlow Technical Handover (v2.2.0-Alpha)
 
-This document summarizes the current state of **FinnaFlow** as of March 21, 2026, following the "Privacy & Security" sprint.
+This document serves as a transition guide for developers maintaining or extending the FinnaFlow codebase following the **Modularization & Documentation Sprint**.
 
-## 📍 Current State: "Safe Harbor" Release
-The application has been elevated from a simple visualizer to a security-conscious financial health auditor. It is fully deployed and verified on GitHub Pages.
+## 🏗️ Architecture Overview
 
-### 🛡️ 1. Privacy Shield & Social Sharing
-Implemented a "blinder" system designed for the 2025 sharing economy (Reddit/X/Discord).
-- **Redaction Logic**: One-click global toggle masks all absolute currency values.
-- **Visual Privacy**: The Net Worth summary uses high-fidelity Gaussian blur (`blur-sm`) to hide exact wealth while maintaining the dashboard's premium aesthetic.
-- **Diagram Sanitization**: Link labels in the Sankey diagram automatically omit percentage breakdowns when privacy is active.
+The project has been refactored from a flat structure into a domain-driven modular system.
 
-### 🏥 2. Insurance Health Audit
-A major functional expansion into risk management.
-- **Policy Tracking**: New dedicated management layer for Life, Health, Auto, and Home insurance.
-- **Gap Analysis**: Visual "Coverage Health" indicators that flag missing essential protections.
-- **Integration**: Insurance status now natively feeds into the global Resilience Score (below).
+### Directory Structure
+- `src/components/finance/`: Core financial logic and domain components.
+  - `inputs/`: Atomic input fields for Income, Expense, Assets, and Liabilities.
+  - `modals/`: Feature-heavy overlays (Batch Paste, FIRE Tracker).
+  - `net-worth/`: Wealth distribution and insurance audit views.
+- `src/components/layout/`: Global UI shell and navigation.
+  - `navigation/`: Header, Footer, and Page Switchers.
+  - `modals/`: App Guides, Wiki, and the new **Native User Guide**.
+- `src/store/`: Centralized state using Zustand with persistence middleware.
+- `src/utils/`: Pure utility functions for CSV processing and currency scaling.
 
-### 📈 3. Financial Resilience Score (AI-Ready v1)
-A 0-100 proprietary metric that evaluates the user's "Financial IQ" and safety net:
-- **50/30/20 Rule Check**: Real-time evaluation of Needs vs. Wants.
-- **Savings Velocity**: Rewards high-percentage savings rates.
-- **Resilience Factors**: Weights emergency buffers (Assets / Monthly Expense) and active Insurance coverage.
-- **Projection Integration**: The score updates dynamically in the "Projection Hub" as users simulate market crashes or lifestyle changes.
+## 🧠 Intelligent Ingestion (Heuristic Engine)
 
-### 🚀 4. CI/CD & Build Optimization
-- **GitHub Actions**: Configured `.github/workflows/deploy.yml` for automated deployment to GitHub Pages on every push to `main`.
-- **Version Bump**: Full project bump to **v1.5.0**.
-- **PWA Assets**: Verified PWA manifest consistency for mobile "Add to Home Screen" support.
+The "Batch Paste" feature uses a local regex-based heuristic engine to parse unstructured text. 
 
-## 🛠️ Where We Left Off (Next Session Goals)
-1. **Local Oracle (Insights v2)**: Implement heuristic-based NLP "hints" that explain *why* a score is low (e.g., "Your emergency fund is below the 3-month safety threshold").
-2. **Time-Capsule Histograms**: Enable periodic snapshotting of net worth to visualize historical growth trends without requiring a database.
-3. **Advanced Share Hub**: Add "Save as PNG" and "Export to PDF" specifically for high-resolution Sankey diagram preservation.
+- **Logic Location**: `src/components/finance/modals/BatchPasteModal.tsx`
+- **Detection Capabilities**: Matches patterns for K PLUS, SCB, and GrabPay.
+- **Redaction**: Automatically strips sensitive reference codes and IDs before data reaches the store.
 
-## 📝 Action Items & Reminders
+## 🚀 Deployment & CI/CD
 
-### For the USER (Manual Steps)
-- **[✔] Verified Push**: Git push to `origin main` is successful.
-- **[ ] Asset Audit**: Confirm that the PWA icons (logo.svg) render correctly on your specific mobile device after deployment.
+The project now uses a **Native GitHub Actions** deployment pipeline. This is more reliable than branch-based methods.
 
-### For the AI (Future Iterations)
-- **[ ] Logic Audit**: Consider refining the "Debt" weighting in the Resilience Score (e.g., distinguish between productive debt like mortgages and high-interest credit cards).
-- **[ ] Dashboard Widgets**: Add "Health Gauges" for individual score categories (Savings, Housing, Burn Rate).
+- **Workflow**: `.github/workflows/deploy.yml`
+- **Requirement**: GitHub Repository Settings > Pages > Source must be set to **"GitHub Actions"**.
+- **Base URL**: The `vite.config.ts` handles the subdirectory hosting (`/finnaflow/`) for GitHub Pages using `import.meta.env.BASE_URL`.
 
----
-*Signed, Antigravity*
-*2026-03-21*
+## 🛠️ Maintenance & Technical Debt
+
+1. **CSS Cleaning**: Some legacy CSS in `index.css` could be refactored into Tailwind utility classes.
+2. **Standardized Modals**: The project uses a mix of state-driven view switches (App.tsx) and absolute-positioned modals. Future refactoring could unify these into a single Modal Provider.
+3. **PWA Assets**: The `public/` directory contains icons generated for the PWA manifest. Ensure these are updated if the brand logo changes.
+
+## 📝 Knowledge Items (KIs)
+Refer to the `knowledge/` directory in the application data for distilled summaries of specific complex logic (e.g., Sankey normalization).
