@@ -31,7 +31,7 @@ export const WikiPage: React.FC<WikiPageProps> = ({ onBack }) => {
                 </p>
                 <div className="mt-8">
                     <a 
-                        href="/USER_GUIDE.html" 
+                        href={`${import.meta.env.BASE_URL}USER_GUIDE.html`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-2xl text-sm font-bold shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all active:scale-[0.98]"

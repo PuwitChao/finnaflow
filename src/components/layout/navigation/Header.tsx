@@ -96,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
                     <button onClick={() => onViewToggle('wiki')} className="apple-icon-btn" title={t('inputs.hints.wiki')}><HelpCircle size={19} /></button>
                     <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
-                    <a href="/USER_GUIDE.html" target="_blank" rel="noopener noreferrer" className="apple-icon-btn text-[#007AFF]" title={t('inputs.hints.userGuide')}>
+                    <a href={`${import.meta.env.BASE_URL}USER_GUIDE.html`} target="_blank" rel="noopener noreferrer" className="apple-icon-btn text-[#007AFF]" title={t('inputs.hints.userGuide')}>
                         <Book size={19} />
                     </a>
                     <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
