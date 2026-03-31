@@ -17,6 +17,7 @@ import { OnboardingOverlay } from './components/layout/OnboardingOverlay';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { NetWorthTab } from './components/finance/NetWorthTab';
+import { BatchPasteModal } from './components/finance/BatchPasteModal';
 
 function App() {
     const store = useFinanceStore();
@@ -29,6 +30,7 @@ function App() {
     const [showTemplateMenu, setShowTemplateMenu] = useState(false);
     const [view, setView] = useState<'dashboard' | 'wiki' | 'networth'>('dashboard');
     const [netWorthTab, setNetWorthTab] = useState<'composition' | 'insurance'>('composition');
+    const [showBatchPaste, setShowBatchPaste] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const csvInputRef = useRef<HTMLInputElement>(null);
     const headerRef = useRef<HTMLDivElement>(null);
@@ -197,6 +199,7 @@ function App() {
                     onNewSession={handleNewSession}
                     onCSVExport={handleCSVExport}
                     onCSVImportClick={() => csvInputRef.current?.click()}
+                    onBatchPasteClick={() => setShowBatchPaste(true)}
                     onViewToggle={(v) => setView(v)}
                     onLoadTemplate={handleLoadTemplate}
                     showLangMenu={showLangMenu}
@@ -285,6 +288,7 @@ function App() {
                 </div>
             )}
             <ProjectorPanel />
+            {showBatchPaste && <BatchPasteModal onClose={() => setShowBatchPaste(false)} />}
         </div>
     );
 }

@@ -136,7 +136,21 @@
             "securityPercentile": "98th Percentile Security",
             "goodStanding": "Good Standing",
             "activeDebt": "Active Debt",
-            "quickAdd": "Quick Add"
+            "quickAdd": "Quick Add",
+            "tracker": {
+                "title": "Financial Freedom Tracker",
+                "subtitle": "Calculate your journey towards early retirement based on the 4% rule.",
+                "targetPot": "Your Freedom Number",
+                "currentSavings": "Current Velocity",
+                "timeToFreedom": "Time to Freedom",
+                "roiLabel": "Expected Annual ROI",
+                "swrLabel": "Safe Withdrawal Rate (SWR)",
+                "monthlySurplus": "Monthly Surplus",
+                "years": "Years",
+                "months": "Months",
+                "reached": "Goal Reached!",
+                "projectionNote": "Data uses your current net worth as the starting baseline."
+            }
         }
     },
     "frequency": {
@@ -270,5 +284,32 @@
         "needsHigh": "Your needs are above the recommended 50%. Consider auditing fixed costs like subscriptions or utilities.",
         "wantsHigh": "Spending on wants exceeds 30%. Try the 48-hour rule for impulsive purchases.",
         "savingsLow": "Savings are below 20%. Aim to automate a small increase in your monthly contributions."
+    },
+    "batchPaste": {
+        "title": "Intelligent Ingestion",
+        "subtitle": "Paste raw text from your bank app or statement to automatically extract transactions.",
+        "placeholder": "Paste transaction text from bank app...",
+        "pasteLabel": "Raw Statement Text",
+        "previewLabel": "Extraction Preview",
+        "privacyNotice": "Heuristics run locally in your browser. No sensitive data leaves your device.",
+        "import": "Import Selected",
+        "noFound": "No transactions detected",
+        "waiting": "Waiting for input",
+        "noSelected": "No items selected",
+        "success": "Imported {{count}} transactions successfully",
+        "type": {
+            "income": "Income",
+            "expense": "Expense"
+        }
+    },
+    "batch": {
+        "selected": "Selected {{count}} items",
+        "moveTo": "Change Category",
+        "delete": "Delete Selected",
+        "cancel": "Cancel",
+        "confirm": "Confirm Change",
+        "flipAll": "Flip All Types",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All"
     }
 }

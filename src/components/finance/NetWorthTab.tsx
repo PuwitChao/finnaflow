@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { getCurrencySymbol } from '../../utils/currencies';
 import { NetWorthGroup } from './NetWorthGroup';
 import { NetWorthSummary } from './NetWorthSummary';
 import { AssetDistributionChart } from '../viz/AssetDistributionChart';
+import { FireTrackerOverlay } from './FireTrackerOverlay';
 import { TrendingUp, TrendingDown, Target, Info } from 'lucide-react';
 
 export const NetWorthTab: React.FC = () => {
     const { t } = useI18n();
+    const [isFireTrackerOpen, setIsFireTrackerOpen] = useState(false);
 
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-5 duration-700 pb-20">
+            {isFireTrackerOpen && <FireTrackerOverlay onClose={() => setIsFireTrackerOpen(false)} />}
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-2">
@@ -27,7 +30,10 @@ export const NetWorthTab: React.FC = () => {
                 </div>
                 
                 <div className="flex items-center gap-4 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/20 dark:border-white/5">
-                    <button className="apple-button-secondary px-6 py-3 text-xs flex items-center gap-2">
+                    <button 
+                        onClick={() => setIsFireTrackerOpen(true)}
+                        className="apple-button-secondary px-6 py-3 text-xs flex items-center gap-2"
+                    >
                         <Target size={14} strokeWidth={2.5} />
                         {t('inputs.netWorth.planFire')}
                     </button>

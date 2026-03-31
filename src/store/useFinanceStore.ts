@@ -10,6 +10,7 @@ export interface FinanceItem {
     amount: number;
     frequency: Frequency;
     category: Category;
+    description?: string;
     startDate?: string;
     endDate?: string;
 }
@@ -19,6 +20,7 @@ export interface NetWorthItem {
     name: string;
     amount: number;
     category: string;
+    description?: string;
 }
 
 export interface InsuranceItem {
@@ -58,6 +60,8 @@ interface FinanceState {
     removeLiability: (id: string) => void;
     addInsurance: (item: InsuranceItem) => void;
     removeInsurance: (id: string) => void;
+    updateItems: (ids: string[], type: 'income' | 'expense' | 'asset' | 'liability', updates: any) => void;
+    removeItems: (ids: string[], type: 'income' | 'expense' | 'asset' | 'liability') => void;
     setUnlocked: (unlocked: boolean) => void;
     setCurrency: (currency: string) => void;
     toggleTheme: () => void;
@@ -135,6 +139,24 @@ export const useFinanceStore = create<FinanceState>()(
                 insuranceItems: state.insuranceItems.filter(i => i.id !== id),
                 lastUpdated: new Date().toISOString()
             })),
+            updateItems: (ids: string[], type, updates) => set((state: FinanceState) => {
+                const key = type === 'income' ? 'incomeItems' : 
+                            type === 'expense' ? 'expenseItems' : 
+                            type === 'asset' ? 'assetItems' : 'liabilityItems';
+                return {
+                    [key]: state[key].map((item: any) => ids.includes(item.id) ? { ...item, ...updates } : item),
+                    lastUpdated: new Date().toISOString()
+                };
+            }),
+            removeItems: (ids: string[], type) => set((state: FinanceState) => {
+                const key = type === 'income' ? 'incomeItems' : 
+                            type === 'expense' ? 'expenseItems' : 
+                            type === 'asset' ? 'assetItems' : 'liabilityItems';
+                return {
+                    [key]: state[key].filter((item: any) => !ids.includes(item.id)),
+                    lastUpdated: new Date().toISOString()
+                };
+            }),
             setUnlocked: (unlocked: boolean) => set({ isUnlocked: unlocked }),
             setCurrency: (currency: string) => set({ currency }),
             setPreferencesSet: (val: boolean) => set({ hasSetPreferences: val }),

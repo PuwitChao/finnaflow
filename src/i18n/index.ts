@@ -15,7 +15,7 @@ const translations: Record<Language, Translations> = {
 interface I18nState {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (key: string) => string;
+    t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 /**
@@ -27,7 +27,7 @@ export const useI18n = create<I18nState>()(
         (set, get) => ({
             language: 'en',
             setLanguage: (lang: Language) => set({ language: lang }),
-            t: (key: string): string => {
+            t: (key: string, params?: Record<string, string | number>): string => {
                 const lang = get().language;
                 const keys = key.split('.');
                 let result: unknown = translations[lang];
@@ -49,7 +49,16 @@ export const useI18n = create<I18nState>()(
                     }
                 }
 
-                return typeof result === 'string' ? result : key;
+                let text = typeof result === 'string' ? result : key;
+                
+                // Replace parameters
+                if (params) {
+                    Object.entries(params).forEach(([k, v]) => {
+                        text = text.replace(`{{${k}}}`, String(v));
+                    });
+                }
+
+                return text;
             },
         }),
         {
