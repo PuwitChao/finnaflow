@@ -101,7 +101,8 @@
             "currency": "Change your display currency",
             "language": "Switch interface language",
             "theme": "Toggle between Light and Dark mode",
-            "templates": "Quick-start with pre-defined financial scenarios"
+            "templates": "Quick-start with pre-defined financial scenarios",
+            "userGuide": "Interactive HTML User Guide"
         },
         "itemAdded": "Item added successfully",
         "noItems": "No Items Added",

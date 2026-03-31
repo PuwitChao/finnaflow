@@ -3,21 +3,21 @@ import { useFinanceStore, FinanceItem } from './store/useFinanceStore';
 import { useI18n } from './i18n';
 import { SankeyChart } from './components/viz/SankeyChart';
 import { ProjectorPanel } from './components/viz/ProjectorPanel';
-import { AppGuide } from './components/layout/AppGuide';
-import { WikiPage } from './components/layout/WikiPage';
+import { AppGuide } from './components/layout/modals/AppGuide';
+import { WikiPage } from './components/layout/modals/WikiPage';
 import { InsuranceAudit } from './components/viz/InsuranceAudit';
 import { exportToCSV, parseCSV } from './utils/csvProcessor';
 import { RefreshCw } from 'lucide-react';
 
 // New Modular Components
-import { FinanceInput } from './components/finance/FinanceInput';
-import { NetWorthInput } from './components/finance/NetWorthInput';
-import { NetWorthCard } from './components/finance/NetWorthCard';
-import { OnboardingOverlay } from './components/layout/OnboardingOverlay';
-import { Header } from './components/layout/Header';
-import { Footer } from './components/layout/Footer';
-import { NetWorthTab } from './components/finance/NetWorthTab';
-import { BatchPasteModal } from './components/finance/BatchPasteModal';
+import { FinanceInput } from './components/finance/inputs/FinanceInput';
+import { NetWorthInput } from './components/finance/inputs/NetWorthInput';
+import { NetWorthCard } from './components/finance/net-worth/NetWorthCard';
+import { OnboardingOverlay } from './components/layout/modals/OnboardingOverlay';
+import { Header } from './components/layout/navigation/Header';
+import { Footer } from './components/layout/navigation/Footer';
+import { NetWorthTab } from './components/finance/net-worth/NetWorthTab';
+import { BatchPasteModal } from './components/finance/modals/BatchPasteModal';
 
 function App() {
     const store = useFinanceStore();

@@ -1,7 +1,7 @@
 import React from 'react';
-import { useFinanceStore } from '../../store/useFinanceStore';
-import { SUPPORTED_CURRENCIES, Currency } from '../../utils/currencies';
-import { useI18n } from '../../i18n';
+import { useFinanceStore } from '../../../store/useFinanceStore';
+import { SUPPORTED_CURRENCIES, Currency } from '../../../utils/currencies';
+import { useI18n } from '../../../i18n';
 import { Sparkles, Globe, Coins, ChevronDown, Activity } from 'lucide-react';
 
 export const OnboardingOverlay: React.FC = () => {

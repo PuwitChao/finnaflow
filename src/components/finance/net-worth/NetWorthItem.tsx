@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useFinanceStore, NetWorthItem as INetWorthItem } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
-import { getCurrencySymbol } from '../../utils/currencies';
+import { useFinanceStore, NetWorthItem as INetWorthItem } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
+import { getCurrencySymbol } from '../../../utils/currencies';
 import { Trash2, Copy, Edit2, Check, X } from 'lucide-react';
 
 interface NetWorthItemProps {

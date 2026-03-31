@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { useFinanceStore } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
-import { getCurrencySymbol } from '../../utils/currencies';
+import { useFinanceStore } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
+import { getCurrencySymbol } from '../../../utils/currencies';
 import { X, TrendingUp, ShieldCheck, Clock, Info, ChevronRight, TrendingDown, Percent } from 'lucide-react';
 import { 
     getMonthlySurplus, 
     calculateFireNumber, 
     solveForFireDuration 
-} from '../../utils/financeMath';
+} from '../../../utils/financeMath';
 
 interface FireTrackerOverlayProps {
     onClose: () => void;

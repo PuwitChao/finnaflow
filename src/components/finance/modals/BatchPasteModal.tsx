@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useFinanceStore, FinanceItem, Category } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
-import { parseStatement, ParsedTransaction } from '../../utils/statementParser';
+import { useFinanceStore, FinanceItem, Category } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
+import { parseStatement, ParsedTransaction } from '../../../utils/statementParser';
 import { Sparkles, X, Check, AlertCircle, Wand2, Info } from 'lucide-react';
 
 interface BatchPasteModalProps {

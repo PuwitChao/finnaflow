@@ -1,6 +1,6 @@
 import React from 'react';
-import { useFinanceStore } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
+import { useFinanceStore } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
 import { PieChart, ShieldCheck } from 'lucide-react';
 
 export const Footer: React.FC = () => {

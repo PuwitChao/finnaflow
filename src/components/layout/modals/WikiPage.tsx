@@ -1,6 +1,6 @@
 import React from 'react';
-import { useI18n } from '../../i18n';
-import { ArrowLeft, Book, FileText, Globe, ShieldCheck, ChevronRight } from 'lucide-react';
+import { useI18n } from '../../../i18n';
+import { ArrowLeft, Book, FileText, Globe, ShieldCheck, ChevronRight, Sparkles } from 'lucide-react';
 
 interface WikiPageProps {
     onBack: () => void;
@@ -29,6 +29,17 @@ export const WikiPage: React.FC<WikiPageProps> = ({ onBack }) => {
                 <p className="text-xl text-gray-500 dark:text-gray-400 font-medium max-w-2xl leading-relaxed">
                     {t('wiki.subtitle')}
                 </p>
+                <div className="mt-8">
+                    <a 
+                        href="/USER_GUIDE.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-2xl text-sm font-bold shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all active:scale-[0.98]"
+                    >
+                        <FileText size={18} />
+                        <span>Open Full User Guide (HTML)</span>
+                    </a>
+                </div>
             </header>
 
             <div className="space-y-16">
@@ -81,7 +92,28 @@ export const WikiPage: React.FC<WikiPageProps> = ({ onBack }) => {
                     </div>
                 </section>
 
-                {/* Section 2: Resilience Engine */}
+                {/* Section 2: Intelligent Ingestion */}
+                <section>
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-10 h-10 bg-[#007AFF]/10 text-[#007AFF] rounded-xl flex items-center justify-center">
+                            <Sparkles size={22} strokeWidth={2.5} className="text-blue-500" />
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7]">{t('batchPaste.title')}</h2>
+                    </div>
+                    <div className="apple-card rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 space-y-6">
+                        <p className="text-[17px] text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
+                            {t('batchPaste.subtitle')}
+                        </p>
+                        <div className="p-6 bg-blue-500/5 rounded-2xl border border-blue-500/10">
+                            <h4 className="text-sm font-bold text-blue-600 mb-2 uppercase tracking-widest">{t('batchPaste.pasteLabel')}</h4>
+                            <p className="text-sm text-blue-500/80 font-medium leading-relaxed">
+                                Copy transaction history from K PLUS, SCB, or GrabPay and paste it directly. Our engine automatically redacts personal IDs and simplifies merchant titles for a clean dashboard.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Section 3: Resilience Engine */}
                 <section>
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-10 h-10 bg-[#34C759]/10 text-[#34C759] rounded-xl flex items-center justify-center">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useFinanceStore } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
-import { getCurrencySymbol } from '../../utils/currencies';
+import { useFinanceStore } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
+import { getCurrencySymbol } from '../../../utils/currencies';
 import { Plus, Trash2, Sparkles, ShieldCheck, ChevronDown, Copy, Check, X, MoveHorizontal } from 'lucide-react';
 
 interface NetWorthInputProps {

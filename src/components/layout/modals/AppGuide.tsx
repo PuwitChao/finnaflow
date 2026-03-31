@@ -1,5 +1,5 @@
 import React from 'react';
-import { useI18n } from '../../i18n';
+import { useI18n } from '../../../i18n';
 import { Info, BookOpen, Target } from 'lucide-react';
 
 export const AppGuide: React.FC = () => {

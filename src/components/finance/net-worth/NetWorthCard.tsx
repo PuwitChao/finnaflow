@@ -1,7 +1,7 @@
 import React from 'react';
-import { useFinanceStore } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
-import { getCurrencySymbol } from '../../utils/currencies';
+import { useFinanceStore } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
+import { getCurrencySymbol } from '../../../utils/currencies';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 
 export const NetWorthCard: React.FC = () => {

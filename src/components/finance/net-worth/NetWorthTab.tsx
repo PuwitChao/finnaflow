@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useFinanceStore } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
-import { getCurrencySymbol } from '../../utils/currencies';
+import { useFinanceStore } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
+import { getCurrencySymbol } from '../../../utils/currencies';
 import { NetWorthGroup } from './NetWorthGroup';
 import { NetWorthSummary } from './NetWorthSummary';
-import { AssetDistributionChart } from '../viz/AssetDistributionChart';
-import { FireTrackerOverlay } from './FireTrackerOverlay';
+import { AssetDistributionChart } from '../../viz/AssetDistributionChart';
+import { FireTrackerOverlay } from '../modals/FireTrackerOverlay';
 import { TrendingUp, TrendingDown, Target, Info } from 'lucide-react';
 
 export const NetWorthTab: React.FC = () => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useFinanceStore, Frequency, Category } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
-import { getCurrencySymbol } from '../../utils/currencies';
+import { useFinanceStore, Frequency, Category } from '../../../store/useFinanceStore';
+import { useI18n } from '../../../i18n';
+import { getCurrencySymbol } from '../../../utils/currencies';
 import { Plus, Trash2, Wallet, Activity, ChevronDown, Copy, Check, X, MoveHorizontal } from 'lucide-react';
 
 interface FinanceInputProps {
