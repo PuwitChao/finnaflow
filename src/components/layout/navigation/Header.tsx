@@ -11,7 +11,7 @@ interface HeaderProps {
     onCSVExport: () => void;
     onCSVImportClick: () => void;
     onBatchPasteClick: () => void;
-    onViewToggle: (view: 'dashboard' | 'wiki' | 'networth') => void;
+    onViewToggle: (view: 'dashboard' | 'wiki' | 'networth' | 'guide') => void;
     onLoadTemplate: (type: 'beginner' | 'standard') => void;
     showLangMenu: boolean;
     setShowLangMenu: (show: boolean) => void;
@@ -96,9 +96,9 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
                     <button onClick={() => onViewToggle('wiki')} className="apple-icon-btn" title={t('inputs.hints.wiki')}><HelpCircle size={19} /></button>
                     <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
-                    <a href={`${import.meta.env.BASE_URL}USER_GUIDE.html`} target="_blank" rel="noopener noreferrer" className="apple-icon-btn text-[#007AFF]" title={t('inputs.hints.userGuide')}>
+                    <button onClick={() => onViewToggle('guide')} className="apple-icon-btn text-[#007AFF]" title={t('inputs.hints.userGuide')}>
                         <Book size={19} />
-                    </a>
+                    </button>
                     <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
                     <div className="relative">
                         <button onClick={() => { setShowCurrencyMenu(!showCurrencyMenu); setShowLangMenu(false); setShowTemplateMenu(false); }} className={`px-4 py-2 rounded-xl transition-all text-[13px] font-semibold flex items-center gap-2 ${showCurrencyMenu ? 'bg-[#007AFF] text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10'}`} title={t('inputs.hints.currency')}>

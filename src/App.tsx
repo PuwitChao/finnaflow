@@ -18,6 +18,7 @@ import { Header } from './components/layout/navigation/Header';
 import { Footer } from './components/layout/navigation/Footer';
 import { NetWorthTab } from './components/finance/net-worth/NetWorthTab';
 import { BatchPasteModal } from './components/finance/modals/BatchPasteModal';
+import { UserGuideView } from './components/layout/modals/UserGuideView';
 
 function App() {
     const store = useFinanceStore();
@@ -28,7 +29,7 @@ function App() {
     const [showLangMenu, setShowLangMenu] = useState(false);
     const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
     const [showTemplateMenu, setShowTemplateMenu] = useState(false);
-    const [view, setView] = useState<'dashboard' | 'wiki' | 'networth'>('dashboard');
+    const [view, setView] = useState<'dashboard' | 'wiki' | 'networth' | 'guide'>('dashboard');
     const [netWorthTab, setNetWorthTab] = useState<'composition' | 'insurance'>('composition');
     const [showBatchPaste, setShowBatchPaste] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -216,7 +217,9 @@ function App() {
             <input ref={csvInputRef} type="file" accept=".csv" onChange={handleCSVImport} className="hidden" />
 
             {view === 'wiki' ? (
-                <WikiPage onBack={() => setView('dashboard')} />
+                <WikiPage onBack={() => setView('dashboard')} onNavigate={(v) => setView(v)} />
+            ) : view === 'guide' ? (
+                <UserGuideView onBack={() => setView('dashboard')} />
             ) : view === 'networth' ? (
                 <main className="max-w-7xl mx-auto pb-16 sm:pb-32">
                     <NetWorthTab />

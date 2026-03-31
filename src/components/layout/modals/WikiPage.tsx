@@ -4,9 +4,10 @@ import { ArrowLeft, Book, FileText, Globe, ShieldCheck, ChevronRight, Sparkles }
 
 interface WikiPageProps {
     onBack: () => void;
+    onNavigate: (view: 'guide') => void;
 }
 
-export const WikiPage: React.FC<WikiPageProps> = ({ onBack }) => {
+export const WikiPage: React.FC<WikiPageProps> = ({ onBack, onNavigate }) => {
     const { t } = useI18n();
 
     return (
@@ -30,15 +31,13 @@ export const WikiPage: React.FC<WikiPageProps> = ({ onBack }) => {
                     {t('wiki.subtitle')}
                 </p>
                 <div className="mt-8">
-                    <a 
-                        href={`${import.meta.env.BASE_URL}USER_GUIDE.html`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
+                    <button 
+                        onClick={() => onNavigate('guide')}
                         className="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-2xl text-sm font-bold shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all active:scale-[0.98]"
                     >
                         <FileText size={18} />
-                        <span>Open Full User Guide (HTML)</span>
-                    </a>
+                        <span>Open Full User Guide (App Native)</span>
+                    </button>
                 </div>
             </header>
 
