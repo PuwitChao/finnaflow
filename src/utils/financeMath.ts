@@ -1,4 +1,5 @@
 import { FinanceItem } from '../store/useFinanceStore';
+import { WEEKS_PER_MONTH } from '../constants/version';
 
 /**
  * Normalizes any frequency-based finance item into a monthly amount.
@@ -6,7 +7,7 @@ import { FinanceItem } from '../store/useFinanceStore';
 export const getMonthlyAmount = (item: FinanceItem): number => {
     switch (item.frequency) {
         case 'Weekly':
-            return (item.amount * 52) / 12;
+            return item.amount * WEEKS_PER_MONTH;
         case 'Yearly':
             return item.amount / 12;
         case 'Monthly':

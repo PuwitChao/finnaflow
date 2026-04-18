@@ -1,8 +1,9 @@
 import { FinanceItem, Frequency } from '../store/useFinanceStore';
+import { WEEKS_PER_MONTH } from '../constants/version';
 
 /**
  * Normalizes a financial amount to its monthly average based on frequency.
- * 
+ *
  * @param amount - The numeric value to normalize.
  * @param frequency - The frequency of the transaction ('Weekly', 'Monthly', 'Yearly').
  * @returns The monthly average value.
@@ -10,7 +11,7 @@ import { FinanceItem, Frequency } from '../store/useFinanceStore';
 export const normalizeToMonthly = (amount: number, frequency: Frequency): number => {
     switch (frequency) {
         case 'Weekly':
-            return amount * 4.33; // Average weeks in a month
+            return amount * WEEKS_PER_MONTH;
         case 'Monthly':
             return amount;
         case 'Yearly':
@@ -47,6 +48,7 @@ export interface SankeyData {
 
 /**
  * Generates the Sankey diagram configuration based on user income and expense items.
+ * Items with an endDate in the past are excluded from the diagram.
  */
 export const generateSankeyConfig = (
     incomeItems: FinanceItem[],
@@ -56,6 +58,10 @@ export const generateSankeyConfig = (
     t: (key: string) => string = (k) => k,
     isPrivacyMode: boolean = false
 ): SankeyData => {
+    const today = new Date().toISOString().split('T')[0];
+    const activeIncome = incomeItems.filter(i => !i.endDate || i.endDate >= today);
+    const activeExpenses = expenseItems.filter(i => !i.endDate || i.endDate >= today);
+
     const infFactor = 1 + (macro.inflation / 100);
     const mktFactor = 1 - (macro.marketShock / 100);
 
@@ -65,7 +71,7 @@ export const generateSankeyConfig = (
         return isInvestment ? base * mktFactor : base;
     };
 
-    const totalMonthlyIncome = incomeItems.reduce((acc, item) => acc + getProjectedIncome(item), 0);
+    const totalMonthlyIncome = activeIncome.reduce((acc, item) => acc + getProjectedIncome(item), 0);
 
     const getProjectedAmount = (item: FinanceItem) => {
         const base = normalizeToMonthly(item.amount, item.frequency);
@@ -73,7 +79,7 @@ export const generateSankeyConfig = (
         return base * multiplier * infFactor;
     };
 
-    const totalMonthlyExpense = expenseItems.reduce((acc, item) => acc + getProjectedAmount(item), 0);
+    const totalMonthlyExpense = activeExpenses.reduce((acc, item) => acc + getProjectedAmount(item), 0);
 
     const nodes = [
         t('chart.nodes.debtSource'),
@@ -93,7 +99,7 @@ export const generateSankeyConfig = (
         { type: 'unallocated' }
     ];
 
-    const categories = Array.from(new Set(expenseItems.map(i => i.category)));
+    const categories = Array.from(new Set(activeExpenses.map(i => i.category)));
     const categoryNodeOffset = nodes.length;
 
     const catColorMap: Record<string, string> = {
@@ -112,14 +118,14 @@ export const generateSankeyConfig = (
     });
 
     const incomeNodeOffset = nodes.length;
-    incomeItems.forEach(item => {
+    activeIncome.forEach(item => {
         nodes.push(item.name);
         nodeColors.push('#10b981');
         nodeMetadata.push({ type: 'income', id: item.id, name: item.name });
     });
 
     const expenseNodeOffset = nodes.length;
-    expenseItems.forEach(item => {
+    activeExpenses.forEach(item => {
         nodes.push(item.name);
         nodeColors.push(catColorMap[item.category] || '#94a3b8');
         nodeMetadata.push({ type: 'expense', id: item.id, name: item.name, category: item.category });
@@ -127,7 +133,7 @@ export const generateSankeyConfig = (
 
     const links: SankeyData['links'] = [];
 
-    incomeItems.forEach((item, index) => {
+    activeIncome.forEach((item, index) => {
         links.push({
             source: incomeNodeOffset + index,
             target: 1,
@@ -148,7 +154,7 @@ export const generateSankeyConfig = (
     }
 
     categories.forEach((cat, index) => {
-        const catTotal = expenseItems
+        const catTotal = activeExpenses
             .filter(i => i.category === cat)
             .reduce((acc, i) => acc + getProjectedAmount(i), 0);
 
@@ -178,7 +184,7 @@ export const generateSankeyConfig = (
         });
     }
 
-    expenseItems.forEach((item, index) => {
+    activeExpenses.forEach((item, index) => {
         const catIndex = categories.indexOf(item.category);
         const itemAmount = getProjectedAmount(item);
         const percentage = totalMonthlyIncome > 0 ? (itemAmount / totalMonthlyIncome * 100).toFixed(1) : '0';
@@ -200,18 +206,35 @@ export const generateSankeyConfig = (
     return { nodes, links, nodeColors, nodeMetadata };
 };
 
+/** Individual score components from the resilience calculation. */
+export interface ResilienceBreakdown {
+    score: number;
+    savingsScore: number;
+    needsScore: number;
+    wantsScore: number;
+    assetsScore: number;
+    insuranceScore: number;
+    savingsRate: number;
+    needsRate: number;
+    wantsRate: number;
+}
+
 /**
- * Calculates a financial resilience score (0-100) based on budgeting best practices.
+ * Calculates a financial resilience score (0–100) and returns a full breakdown
+ * of each component so the UI can explain the score to the user.
  */
-export const calculateResilienceScore = (
+export const getResilienceBreakdown = (
     incomeItems: FinanceItem[],
     expenseItems: FinanceItem[],
-    assetItems: any[],
-    insuranceItems: any[] = []
-): number => {
+    assetItems: { amount?: number }[],
+    insuranceItems: { type: string }[] = []
+): ResilienceBreakdown => {
     const totalIncome = incomeItems.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
     const totalExpense = expenseItems.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
-    if (totalIncome === 0) return 0;
+
+    if (totalIncome === 0) {
+        return { score: 0, savingsScore: 0, needsScore: 0, wantsScore: 0, assetsScore: 0, insuranceScore: 0, savingsRate: 0, needsRate: 0, wantsRate: 0 };
+    }
 
     const needs = expenseItems.filter(i => i.category === 'Needs').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
     const wants = expenseItems.filter(i => i.category === 'Wants').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
@@ -221,32 +244,28 @@ export const calculateResilienceScore = (
     const needsRate = needs / totalIncome;
     const wantsRate = wants / totalIncome;
 
-    let score = 0;
+    const savingsScore = Math.min(savingsRate / 0.2 * 40, 40);
+    const needsScore = needsRate <= 0.5 ? 30 : Math.max(30 - (needsRate - 0.5) * 100, 0);
+    const wantsScore = wantsRate <= 0.3 ? 20 : Math.max(20 - (wantsRate - 0.3) * 100, 0);
 
-    // Savings Rate (Max 40 points, 20% savings = 40 points)
-    score += Math.min(savingsRate / 0.2 * 40, 40);
-
-    // Needs Rate (Max 30 points, <= 50% = 30 points)
-    if (needsRate <= 0.5) score += 30;
-    else score += Math.max(30 - (needsRate - 0.5) * 100, 0);
-
-    // Wants Rate (Max 20 points, <= 30% = 20 points)
-    if (wantsRate <= 0.3) score += 20;
-    else score += Math.max(20 - (wantsRate - 0.3) * 100, 0);
-
-    // Assets Buffer (Max 5 points - 3 months expenses = 5 points)
     const totalAssets = assetItems.reduce((acc, i) => acc + (i.amount || 0), 0);
-    if (totalExpense > 0) {
-        const bufferMonths = totalAssets / totalExpense;
-        score += Math.min(bufferMonths / 3 * 5, 5);
-    }
+    const assetsScore = totalExpense > 0 ? Math.min((totalAssets / totalExpense) / 3 * 5, 5) : 0;
 
-    // Insurance Bonus (Max 5 points - 1.25 pts per type)
     const coveredTypes = new Set(insuranceItems.map(i => i.type));
     const essentialTypes = ['Life', 'Health', 'Auto', 'Home'];
-    essentialTypes.forEach(t => {
-        if (coveredTypes.has(t)) score += 1.25;
-    });
+    const insuranceScore = essentialTypes.filter(t => coveredTypes.has(t)).length * 1.25;
 
-    return Math.round(score);
+    const score = Math.round(savingsScore + needsScore + wantsScore + assetsScore + insuranceScore);
+
+    return { score, savingsScore, needsScore, wantsScore, assetsScore, insuranceScore, savingsRate, needsRate, wantsRate };
 };
+
+/**
+ * Calculates a financial resilience score (0-100) based on budgeting best practices.
+ */
+export const calculateResilienceScore = (
+    incomeItems: FinanceItem[],
+    expenseItems: FinanceItem[],
+    assetItems: { amount?: number }[],
+    insuranceItems: { type: string }[] = []
+): number => getResilienceBreakdown(incomeItems, expenseItems, assetItems, insuranceItems).score;

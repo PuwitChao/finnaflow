@@ -4,6 +4,7 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { generateSankeyConfig } from '../../utils/financeEngine';
 import { DrillDownModal } from './DrillDownModal';
+import { SankeyErrorBoundary } from './SankeyErrorBoundary';
 
 /**
  * Interactive Sankey Diagram component powered by react-plotly.js.
@@ -34,6 +35,7 @@ export const SankeyChart: React.FC = () => {
     const linkColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(15, 23, 42, 0.1)';
 
     return (
+        <SankeyErrorBoundary>
         <div className="w-full h-full sankey-wrapper">
             <Plot
                 data={[
@@ -113,5 +115,6 @@ export const SankeyChart: React.FC = () => {
                 />
             )}
         </div>
+        </SankeyErrorBoundary>
     );
 };

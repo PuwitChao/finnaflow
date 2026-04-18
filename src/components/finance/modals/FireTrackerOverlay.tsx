@@ -2,11 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { useFinanceStore } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
 import { getCurrencySymbol } from '../../../utils/currencies';
-import { X, TrendingUp, ShieldCheck, Clock, Info, ChevronRight, TrendingDown, Percent } from 'lucide-react';
-import { 
-    getMonthlySurplus, 
-    calculateFireNumber, 
-    solveForFireDuration 
+import { X, TrendingUp, Clock, Info, Bookmark, Trash2 } from 'lucide-react';
+import {
+    getMonthlySurplus,
+    calculateFireNumber,
+    solveForFireDuration
 } from '../../../utils/financeMath';
 
 interface FireTrackerOverlayProps {
@@ -15,23 +15,24 @@ interface FireTrackerOverlayProps {
 
 export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose }) => {
     const { t } = useI18n();
-    const { incomeItems, expenseItems, getTotalAssets, getTotalLiabilities, isPrivacyMode, currency } = useFinanceStore();
-    
-    // UI Local State for Projection Sliders
-    const [roi, setRoi] = useState(7); // Default 7% annual ROI
-    const [swr, setSwr] = useState(4); // Default 4% rule
-    
+    const { incomeItems, expenseItems, getTotalAssets, getTotalLiabilities, isPrivacyMode, currency, fireScenarios, saveFireScenario, removeFireScenario, showNotification } = useFinanceStore();
+
+    const [roi, setRoi] = useState(7);
+    const [swr, setSwr] = useState(4);
+    const [showScenarios, setShowScenarios] = useState(false);
+
     const netWorth = getTotalAssets() - getTotalLiabilities();
     const sym = getCurrencySymbol(currency);
-    
+
     const formatAmount = (val: number) => {
         if (isPrivacyMode) return '••••••';
+        if (!isFinite(val)) return '∞';
         const absVal = Math.abs(val);
         return `${val < 0 ? '-' : ''}${sym}${absVal.toLocaleString()}`;
     };
+
     const monthlySurplus = getMonthlySurplus(incomeItems, expenseItems);
-    
-    // Annualized expenses represent the lifestyle we want to maintain
+
     const annualExpenses = expenseItems.reduce((acc, item) => {
         let monthly = item.amount;
         if (item.frequency === 'Weekly') monthly = (item.amount * 52) / 12;
@@ -40,21 +41,32 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
     }, 0);
 
     const fireNumber = useMemo(() => calculateFireNumber(annualExpenses, swr), [annualExpenses, swr]);
-    const totalMonths = useMemo(() => 
-        solveForFireDuration(netWorth, monthlySurplus, fireNumber, roi), 
+    const totalMonths = useMemo(() =>
+        solveForFireDuration(netWorth, monthlySurplus, fireNumber, roi),
     [netWorth, monthlySurplus, fireNumber, roi]);
 
-    const years = Math.floor(totalMonths / 12);
-    const months = Math.ceil(totalMonths % 12);
-    
-    const progressPercent = Math.min(100, Math.max(0, (netWorth / fireNumber) * 100));
+    const years = isFinite(totalMonths) ? Math.floor(totalMonths / 12) : null;
+    const months = isFinite(totalMonths) ? Math.ceil(totalMonths % 12) : null;
+
+    const progressPercent = isFinite(fireNumber) && fireNumber > 0
+        ? Math.min(100, Math.max(0, (netWorth / fireNumber) * 100))
+        : 0;
+
+    const handleSaveScenario = () => {
+        saveFireScenario({
+            name: `ROI ${roi}% · SWR ${swr}%`,
+            roi,
+            swr,
+            fireNumber: isFinite(fireNumber) ? fireNumber : 0,
+        });
+        showNotification(t('inputs.netWorth.tracker.scenarioSaved'), 'success');
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-[#F5F5F7]/80 dark:bg-black/80 backdrop-blur-2xl animate-in fade-in duration-500">
             <div className="relative w-full max-w-4xl bg-white dark:bg-[#1D1D1F] rounded-[3rem] shadow-2xl border border-white dark:border-white/5 overflow-hidden flex flex-col md:flex-row animate-in slide-in-from-bottom-8 duration-700">
-                
-                {/* Close Button */}
-                <button 
+
+                <button
                     onClick={onClose}
                     className="absolute top-8 right-8 w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-[#1D1D1F] dark:hover:text-white transition-all z-20"
                 >
@@ -80,8 +92,8 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{t('inputs.netWorth.tracker.roiLabel')}</label>
                                 <span className="text-xl font-black text-[#007AFF]">{roi}%</span>
                             </div>
-                            <input 
-                                type="range" min="0" max="15" step="0.5" value={roi} 
+                            <input
+                                type="range" min="0" max="15" step="0.5" value={roi}
                                 onChange={(e) => setRoi(parseFloat(e.target.value))}
                                 className="w-full apple-range"
                             />
@@ -94,13 +106,46 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{t('inputs.netWorth.tracker.swrLabel')}</label>
                                 <span className="text-xl font-black text-[#007AFF]">{swr}%</span>
                             </div>
-                            <input 
-                                type="range" min="2" max="6" step="0.1" value={swr} 
+                            <input
+                                type="range" min="2" max="6" step="0.1" value={swr}
                                 onChange={(e) => setSwr(parseFloat(e.target.value))}
                                 className="w-full apple-range"
                             />
                             <p className="text-[10px] text-gray-400 font-medium">Trinity Study suggests 4% for a 30-year retirement.</p>
                         </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <button
+                            onClick={handleSaveScenario}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-gray-200 dark:border-white/10 text-[12px] font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+                        >
+                            <Bookmark size={14} />
+                            {t('inputs.netWorth.tracker.saveScenario')}
+                        </button>
+                        {fireScenarios.length > 0 && (
+                            <button
+                                onClick={() => setShowScenarios(!showScenarios)}
+                                className="w-full text-[11px] font-bold text-blue-500 hover:opacity-70 transition-opacity uppercase tracking-widest"
+                            >
+                                {showScenarios ? '▲' : '▼'} {fireScenarios.length} saved
+                            </button>
+                        )}
+                        {showScenarios && (
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                                {fireScenarios.map(s => (
+                                    <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 text-[11px]">
+                                        <div>
+                                            <p className="font-bold text-gray-700 dark:text-gray-300">{s.name}</p>
+                                            <p className="text-gray-400">{sym}{isPrivacyMode ? '••••' : s.fireNumber.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                                        </div>
+                                        <button onClick={() => removeFireScenario(s.id)} className="text-gray-300 hover:text-rose-500 transition-colors">
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex gap-3 italic">
@@ -113,7 +158,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
 
                 {/* Right Panel: Results */}
                 <div className="w-full md:w-3/5 p-8 sm:p-12 bg-gray-50/50 dark:bg-white/[0.01] flex flex-col justify-center">
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
                         <div className="apple-card p-6 bg-white dark:bg-[#2C2C2E] border-0 shadow-sm space-y-1">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('inputs.netWorth.tracker.targetPot')}</p>
@@ -134,7 +179,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                             <Clock size={14} strokeWidth={3} />
                             <span className="text-[10px] font-black uppercase tracking-widest">{t('inputs.netWorth.tracker.timeToFreedom')}</span>
                         </div>
-                        
+
                         {totalMonths === Infinity ? (
                             <h3 className="text-4xl font-black text-rose-500 dark:text-rose-400">Critical State</h3>
                         ) : totalMonths === 0 ? (
@@ -160,7 +205,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                             <span className="text-xs font-black text-[#1D1D1F] dark:text-[#F5F5F7]">{progressPercent.toFixed(1)}%</span>
                         </div>
                         <div className="h-4 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden p-1 border border-gray-200 dark:border-white/5">
-                            <div 
+                            <div
                                 className="h-full bg-gradient-to-r from-[#007AFF] to-[#5856D6] rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(0,122,255,0.4)]"
                                 style={{ width: `${progressPercent}%` }}
                             />

@@ -11,6 +11,8 @@ export interface ParsedTransaction {
     amount: number;
     type: 'income' | 'expense';
     category: string;
+    /** 'high' when a known merchant keyword matched; 'low' when falling back to 'Other'. */
+    confidence: 'high' | 'low';
     longDescription: string;
     raw: string;
 }
@@ -59,16 +61,17 @@ const CC_PATTERN = /(\d{2}\/\d{2}\/\d{4})\s+(\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+(-?[
 const MOBILE_PATTERN = /(\d{2}-\d{2}-\d{2})\s+(\d{2}:\d{2})\s+(.+?)\s+(-?[\d,]+\.\d{2})\s+([\d,]+\.\d{2})?\s+(.+)/g;
 
 /**
- * Suggests a category based on the description
+ * Suggests a category based on the description.
+ * Returns both the category and a confidence level.
  */
-export const suggestCategory = (description: string): string => {
+export const suggestCategory = (description: string): { category: string; confidence: 'high' | 'low' } => {
     const desc = description.toUpperCase();
     for (const [keyword, category] of Object.entries(CATEGORY_MAP)) {
         if (desc.includes(keyword)) {
-            return category;
+            return { category, confidence: 'high' };
         }
     }
-    return 'Other';
+    return { category: 'Other', confidence: 'low' };
 };
 
 /**
@@ -147,13 +150,15 @@ export const parseStatement = (text: string): ParsedTransaction[] => {
     while ((match = CC_PATTERN.exec(text)) !== null) {
         const amount = cleanAmount(match[4]);
         const { name, description } = simplifyDescription(match[3]);
+        const { category, confidence } = suggestCategory(description);
         results.push({
             date: match[1],
             description: name,
             longDescription: description,
             amount: Math.abs(amount),
             type: detectType(description, amount),
-            category: suggestCategory(description),
+            category,
+            confidence,
             raw: match[0]
         });
     }
@@ -180,13 +185,15 @@ export const parseStatement = (text: string): ParsedTransaction[] => {
                 if (IGNORE_KEYWORDS.some(k => typeText.includes(k) || rest.includes(k))) return;
 
                 const { name, description } = simplifyDescription(`${typeText}: ${rest}`);
+                const { category, confidence } = suggestCategory(description);
                 results.push({
                     date,
                     description: name,
                     longDescription: description,
                     amount: Math.abs(amount),
                     type: detectType(description, amount, isIndented),
-                    category: suggestCategory(description),
+                    category,
+                    confidence,
                     raw: line
                 });
             }
@@ -206,13 +213,15 @@ export const parseStatement = (text: string): ParsedTransaction[] => {
                 const amount = cleanAmount(amountMatch[1]);
                 const rawDesc = row.replace(amountMatch[1], '').trim();
                 const { name, description } = simplifyDescription(rawDesc);
+                const { category, confidence } = suggestCategory(description);
                 results.push({
                     date: new Date().toLocaleDateString(),
                     description: name,
                     longDescription: description,
                     amount: Math.abs(amount),
                     type: detectType(description, amount),
-                    category: suggestCategory(description),
+                    category,
+                    confidence,
                     raw: row
                 });
             }
