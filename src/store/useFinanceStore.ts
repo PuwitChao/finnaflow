@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type Frequency = 'Weekly' | 'Monthly' | 'Yearly';
 export type Category = string;
@@ -32,12 +32,23 @@ export interface InsuranceItem {
     frequency: Frequency;
 }
 
+/** A named snapshot of FIRE tracker inputs saved by the user. */
+export interface FireScenario {
+    id: string;
+    name: string;
+    roi: number;
+    swr: number;
+    fireNumber: number;
+    savedAt: string;
+}
+
 interface FinanceState {
     incomeItems: FinanceItem[];
     expenseItems: FinanceItem[];
     assetItems: NetWorthItem[];
     liabilityItems: NetWorthItem[];
     insuranceItems: InsuranceItem[];
+    fireScenarios: FireScenario[];
     isUnlocked: boolean;
     darkMode: boolean;
     isProjectionMode: boolean;
@@ -69,6 +80,8 @@ interface FinanceState {
     setCategoryMultiplier: (category: string, value: number) => void;
     setMacroConfig: (config: Partial<FinanceState['macroConfig']>) => void;
     applyPreset: (inflation: number, marketShock: number) => void;
+    saveFireScenario: (scenario: Omit<FireScenario, 'id' | 'savedAt'>) => void;
+    removeFireScenario: (id: string) => void;
     notification: { message: string, type: 'info' | 'success' | 'error' } | null;
     showNotification: (message: string, type?: 'info' | 'success' | 'error') => void;
     clearSession: () => void;
@@ -76,6 +89,20 @@ interface FinanceState {
     getTotalLiabilities: () => number;
     loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[], insurance?: InsuranceItem[] }) => void;
 }
+
+const safeStorage = createJSONStorage(() => ({
+    getItem: (name: string): string | null => {
+        try { return localStorage.getItem(name); } catch { return null; }
+    },
+    setItem: (name: string, value: string): void => {
+        try { localStorage.setItem(name, value); } catch (e) {
+            console.warn('FinnaFlow: Unable to persist data (storage quota may be exceeded).', e);
+        }
+    },
+    removeItem: (name: string): void => {
+        try { localStorage.removeItem(name); } catch { /* ignore */ }
+    }
+}));
 
 /**
  * Central state management hook for FinnaFlow.
@@ -89,6 +116,7 @@ export const useFinanceStore = create<FinanceState>()(
             assetItems: [],
             liabilityItems: [],
             insuranceItems: [],
+            fireScenarios: [],
             isUnlocked: true,
             darkMode: false,
             isProjectionMode: false,
@@ -140,8 +168,8 @@ export const useFinanceStore = create<FinanceState>()(
                 lastUpdated: new Date().toISOString()
             })),
             updateItems: (ids: string[], type, updates) => set((state: FinanceState) => {
-                const key = type === 'income' ? 'incomeItems' : 
-                            type === 'expense' ? 'expenseItems' : 
+                const key = type === 'income' ? 'incomeItems' :
+                            type === 'expense' ? 'expenseItems' :
                             type === 'asset' ? 'assetItems' : 'liabilityItems';
                 return {
                     [key]: state[key].map((item: any) => ids.includes(item.id) ? { ...item, ...updates } : item),
@@ -149,8 +177,8 @@ export const useFinanceStore = create<FinanceState>()(
                 };
             }),
             removeItems: (ids: string[], type) => set((state: FinanceState) => {
-                const key = type === 'income' ? 'incomeItems' : 
-                            type === 'expense' ? 'expenseItems' : 
+                const key = type === 'income' ? 'incomeItems' :
+                            type === 'expense' ? 'expenseItems' :
                             type === 'asset' ? 'assetItems' : 'liabilityItems';
                 return {
                     [key]: state[key].filter((item: any) => !ids.includes(item.id)),
@@ -195,6 +223,15 @@ export const useFinanceStore = create<FinanceState>()(
                 macroConfig: { inflation, marketShock },
                 isProjectionMode: true
             }),
+            saveFireScenario: (scenario) => set((state: FinanceState) => ({
+                fireScenarios: [
+                    { ...scenario, id: crypto.randomUUID(), savedAt: new Date().toISOString() },
+                    ...state.fireScenarios.slice(0, 4),
+                ]
+            })),
+            removeFireScenario: (id: string) => set((state: FinanceState) => ({
+                fireScenarios: state.fireScenarios.filter(s => s.id !== id)
+            })),
             showNotification: (message: string, type: 'info' | 'success' | 'error' = 'info') => {
                 set({ notification: { message, type } });
                 setTimeout(() => set({ notification: null }), 3000);
@@ -233,6 +270,7 @@ export const useFinanceStore = create<FinanceState>()(
         }),
         {
             name: 'finnaflow-storage',
+            storage: safeStorage,
         }
     )
 );

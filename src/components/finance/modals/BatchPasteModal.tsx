@@ -2,29 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { useFinanceStore, FinanceItem, Category } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
 import { parseStatement, ParsedTransaction } from '../../../utils/statementParser';
-import { Sparkles, X, Check, AlertCircle, Wand2, Info } from 'lucide-react';
+import { Sparkles, X, Check, AlertCircle, Wand2, Info, RotateCcw } from 'lucide-react';
 
 interface BatchPasteModalProps {
     onClose: () => void;
 }
 
+interface ImportResult {
+    count: number;
+    incomeIds: string[];
+    expenseIds: string[];
+}
+
 export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => {
     const { t } = useI18n();
-    const { addIncome, addExpense, showNotification } = useFinanceStore();
-    
+    const { addIncome, addExpense, removeItems, showNotification } = useFinanceStore();
+
     const [inputText, setInputText] = useState('');
     const [parsedData, setParsedData] = useState<ParsedTransaction[]>([]);
     const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+    const [editedCategories, setEditedCategories] = useState<Record<number, string>>({});
+    const [importResult, setImportResult] = useState<ImportResult | null>(null);
+
+    const rawLineCount = inputText.split('\n').filter(l => l.trim().length > 0).length;
 
     useEffect(() => {
         if (inputText.trim()) {
             const results = parseStatement(inputText);
             setParsedData(results);
-            // Auto-select all by default
             setSelectedItems(new Set(results.map((_, i) => i)));
+            setEditedCategories({});
         } else {
             setParsedData([]);
             setSelectedItems(new Set());
+            setEditedCategories({});
         }
     }, [inputText]);
 
@@ -37,51 +48,97 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
 
     const toggleItemType = (index: number) => {
         const newData = [...parsedData];
-        newData[index] = {
-            ...newData[index],
-            type: newData[index].type === 'income' ? 'expense' : 'income'
-        };
+        newData[index] = { ...newData[index], type: newData[index].type === 'income' ? 'expense' : 'income' };
         setParsedData(newData);
     };
 
     const flipAllTypes = () => {
-        setParsedData(parsedData.map(item => ({
-            ...item,
-            type: item.type === 'income' ? 'expense' : 'income'
-        })));
+        setParsedData(parsedData.map(item => ({ ...item, type: item.type === 'income' ? 'expense' : 'income' })));
+    };
+
+    const handleCategoryEdit = (index: number, category: string) => {
+        setEditedCategories(prev => ({ ...prev, [index]: category }));
     };
 
     const handleImport = () => {
         const itemsToImport = parsedData.filter((_, i) => selectedItems.has(i));
-        
+
         if (itemsToImport.length === 0) {
             showNotification(t('batchPaste.noSelected') || 'No items selected', 'error');
             return;
         }
 
-        itemsToImport.forEach(item => {
+        const incomeIds: string[] = [];
+        const expenseIds: string[] = [];
+
+        itemsToImport.forEach((item, idx) => {
+            const originalIdx = parsedData.indexOf(item);
+            const finalCategory = editedCategories[originalIdx] ?? item.category;
             const newItem: FinanceItem = {
                 id: crypto.randomUUID(),
                 name: item.description,
                 amount: item.amount,
                 frequency: 'Monthly',
-                category: item.category as Category,
+                category: finalCategory as Category,
                 description: item.longDescription
             };
 
             if (item.type === 'income') {
                 addIncome(newItem);
+                incomeIds.push(newItem.id);
             } else {
                 addExpense(newItem);
+                expenseIds.push(newItem.id);
             }
         });
 
-        showNotification(
-            t('batchPaste.success', { count: itemsToImport.length }) || `Successfully imported ${itemsToImport.length} items`, 
-            'success'
-        );
-        onClose();
+        setImportResult({ count: itemsToImport.length, incomeIds, expenseIds });
     };
+
+    const handleUndo = () => {
+        if (!importResult) return;
+        if (importResult.incomeIds.length > 0) removeItems(importResult.incomeIds, 'income');
+        if (importResult.expenseIds.length > 0) removeItems(importResult.expenseIds, 'expense');
+        showNotification(t('batchPaste.undoSuccess') || 'Import undone', 'info');
+        setImportResult(null);
+    };
+
+    if (importResult) {
+        return (
+            <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 sm:p-10 bg-white/60 dark:bg-black/60 backdrop-blur-2xl animate-in fade-in duration-300">
+                <div className="max-w-md w-full apple-card flex flex-col rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-white/10 bg-white dark:bg-[#1C1C1E] p-12 text-center gap-8">
+                    <div className="w-16 h-16 bg-emerald-500 rounded-[1.5rem] flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+                        <Check size={32} className="text-white" strokeWidth={3} />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-black tracking-tight text-[#1D1D1F] dark:text-white">
+                            {t('batchPaste.success', { count: importResult.count })}
+                        </h2>
+                        <p className="text-sm text-gray-500">
+                            {importResult.incomeIds.length > 0 && `${importResult.incomeIds.length} ${t('batchPaste.type.income').toLowerCase()}`}
+                            {importResult.incomeIds.length > 0 && importResult.expenseIds.length > 0 && ' · '}
+                            {importResult.expenseIds.length > 0 && `${importResult.expenseIds.length} ${t('batchPaste.type.expense').toLowerCase()}`}
+                        </p>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={onClose}
+                            className="w-full py-4 rounded-2xl bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1C1C1E] text-sm font-black shadow-xl shadow-black/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            Done
+                        </button>
+                        <button
+                            onClick={handleUndo}
+                            className="w-full py-3.5 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-sm font-bold hover:bg-gray-200 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                        >
+                            <RotateCcw size={15} />
+                            {t('batchPaste.undoImport') || 'Undo'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 sm:p-10 bg-white/60 dark:bg-black/60 backdrop-blur-2xl animate-in fade-in duration-300">
@@ -101,7 +158,7 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
                             </p>
                         </div>
                     </div>
-                    <button 
+                    <button
                         onClick={onClose}
                         className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-white transition-all"
                     >
@@ -120,7 +177,7 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
                                 Local Only
                             </span>
                         </div>
-                        <textarea 
+                        <textarea
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             className="flex-1 w-full apple-input resize-none p-6 text-sm font-mono leading-relaxed"
@@ -135,14 +192,20 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
                     {/* Right Panel: Preview */}
                     <div className="flex-1 p-8 bg-gray-50/50 dark:bg-black/20 overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
-                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                                {t('batchPaste.previewLabel') || 'Extraction Preview'}
-                            </label>
+                            <div className="flex items-center gap-3 ml-1">
+                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                    {t('batchPaste.previewLabel') || 'Extraction Preview'}
+                                </label>
+                                {parsedData.length > 0 && rawLineCount > 0 && (
+                                    <span className="text-[10px] font-bold text-gray-400 bg-gray-200 dark:bg-white/10 px-2 py-0.5 rounded-full">
+                                        {t('batchPaste.parsedCount', { count: parsedData.length }) || `${parsedData.length} found`}
+                                    </span>
+                                )}
+                            </div>
                             <div className="flex items-center gap-4">
-                                <button 
+                                <button
                                     onClick={flipAllTypes}
                                     className="text-[10px] font-bold text-blue-500 hover:opacity-70 transition-opacity uppercase tracking-widest flex items-center gap-1"
-                                    title="Swap Income/Expense for all"
                                 >
                                     <Sparkles size={12} />
                                     {t('batch.flipAll') || 'Flip All'}
@@ -163,21 +226,20 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
                         ) : (
                             <div className="space-y-3">
                                 {parsedData.map((item, index) => (
-                                    <div 
+                                    <div
                                         key={index}
                                         onClick={() => toggleItem(index)}
                                         className={`apple-card p-4 flex items-center gap-4 cursor-pointer transition-all border ${selectedItems.has(index) ? 'border-blue-500 ring-1 ring-blue-500/20 bg-blue-50 dark:bg-blue-500/5' : 'border-transparent hover:border-gray-200 dark:hover:border-white/10'}`}
                                     >
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedItems.has(index) ? 'bg-blue-500 text-white' : 'border-2 border-gray-200 dark:border-white/10 text-transparent'}`}>
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shrink-0 ${selectedItems.has(index) ? 'bg-blue-500 text-white' : 'border-2 border-gray-200 dark:border-white/10 text-transparent'}`}>
                                             <Check size={14} strokeWidth={3} />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400">{item.date}</span>
-                                                <button 
+                                                <button
                                                     onClick={(e) => { e.stopPropagation(); toggleItemType(index); }}
                                                     className={`text-[10px] font-bold px-2 py-0.5 rounded-md transition-transform hover:scale-105 active:scale-95 ${item.type === 'income' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}
-                                                    title="Click to flip type"
                                                 >
                                                     {item.type === 'income' ? t('batchPaste.type.income') || 'Income' : t('batchPaste.type.expense') || 'Expense'}
                                                 </button>
@@ -188,13 +250,25 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
                                             <p className="text-[10px] text-gray-400 truncate mt-0.5 opacity-60 italic">
                                                 {item.longDescription}
                                             </p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] font-bold bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-md text-gray-500 dark:text-gray-400">
-                                                    {item.category}
-                                                </span>
+                                            <div className="flex items-center gap-2 mt-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                                                <select
+                                                    value={editedCategories[index] ?? item.category}
+                                                    onChange={(e) => handleCategoryEdit(index, e.target.value)}
+                                                    className="text-[10px] font-bold bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-md text-gray-600 dark:text-gray-300 border-none focus:ring-0 cursor-pointer appearance-none"
+                                                >
+                                                    {['Needs', 'Wants', 'Savings', 'Investments', 'Debt', 'Food & Delivery', 'Transportation', 'Groceries', 'Shopping', 'Bills & Utilities', 'Dining Out', 'Other'].map(cat => (
+                                                        <option key={cat} value={cat}>{cat}</option>
+                                                    ))}
+                                                </select>
+                                                {item.confidence === 'low' && (
+                                                    <span className="flex items-center gap-1 text-[9px] text-amber-500 font-bold">
+                                                        <AlertCircle size={9} />
+                                                        Guessed
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-right shrink-0">
                                             <p className={`text-lg font-black tracking-tight ${item.type === 'income' ? 'text-emerald-500' : 'text-[#1D1D1F] dark:text-white'}`}>
                                                 {item.type === 'income' ? '+' : ''}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                             </p>
@@ -208,21 +282,21 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
 
                 {/* Footer Actions */}
                 <div className="p-8 border-t border-gray-100 dark:border-white/5 bg-white dark:bg-[#1C1C1E] flex items-center justify-between">
-                    <button 
+                    <button
                         onClick={() => setSelectedItems(selectedItems.size === parsedData.length ? new Set() : new Set(parsedData.map((_, i) => i)))}
                         className="text-[11px] font-bold text-gray-400 hover:text-blue-500 transition-colors uppercase tracking-widest"
                     >
                         {selectedItems.size === parsedData.length ? t('batch.deselectAll') || 'Deselect All' : t('batch.selectAll') || 'Select All'}
                     </button>
-                    
+
                     <div className="flex gap-4">
-                        <button 
+                        <button
                             onClick={onClose}
                             className="px-8 py-4 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-500 text-sm font-bold hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
                         >
                             {t('inputs.labels.cancel')}
                         </button>
-                        <button 
+                        <button
                             onClick={handleImport}
                             disabled={selectedItems.size === 0}
                             className="px-10 py-4 rounded-2xl bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1C1C1E] text-sm font-black shadow-xl shadow-black/10 disabled:opacity-30 disabled:grayscale transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"

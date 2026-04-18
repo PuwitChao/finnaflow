@@ -84,7 +84,9 @@
             "value": "จำนวน",
             "frequency": "ความถี่",
             "bucket": "หมวดหมู่",
-            "endDate": "วันสิ้นสุด"
+            "endDate": "วันสิ้นสุด",
+            "cancel": "ยกเลิก",
+            "editFrequency": "แก้ไขความถี่"
         },
         "hints": {
             "label": "ชื่อเรียกของแหล่งรายได้หรือรายการค่าใช้จ่าย",
@@ -105,6 +107,7 @@
             "userGuide": "คู่มือการใช้งานแบบอินเตอร์แอคทีฟ (HTML)"
         },
         "itemAdded": "เพิ่มรายการสำเร็จ",
+        "amountRequired": "กรุณากรอกจำนวนเงินที่มากกว่าศูนย์",
         "noItems": "ยังไม่มีรายการ",
         "noItemsHint": "กรอกข้อมูลในแบบฟอร์มด้านบนเพื่อเริ่มต้น",
         "defaultItem": "รายการ",
@@ -112,6 +115,8 @@
         "duplicate": "คัดลอก",
         "lastUpdated": "อัปเดตล่าสุด",
         "expires": "สิ้นสุด",
+        "expiresOn": "สิ้นสุด",
+        "expired": "หมดอายุ",
         "netWorth": {
             "title": "เจาะลึกความมั่งคั่ง",
             "subtitle": "ทรัพย์สิน - หนี้สิน",
@@ -150,7 +155,10 @@
                 "years": "ปี",
                 "months": "เดือน",
                 "reached": "บรรลุเป้าหมายแล้ว!",
-                "projectionNote": "ใช้มูลค่าความมั่งคั่งสุทธิปัจจุบันของคุณเป็นฐานเริ่มต้น"
+                "projectionNote": "ใช้มูลค่าความมั่งคั่งสุทธิปัจจุบันของคุณเป็นฐานเริ่มต้น",
+                "saveScenario": "บันทึกสถานการณ์",
+                "scenarioSaved": "บันทึกสถานการณ์สำเร็จ",
+                "noScenarios": "ยังไม่มีสถานการณ์ที่บันทึกไว้"
             }
         }
     },
@@ -164,7 +172,7 @@
         "Wants": "ความต้องการ",
         "Savings": "เงินออม",
         "Investments": "การลงทุน",
-        "Debt": "หนี้สิน",
+        "Debt": "การชำระหนี้",
         "Custom": "กำหนดเอง...",
         "noCategories": "ยังไม่มีหมวดหมู่"
     },
@@ -216,6 +224,9 @@
         },
         "importSuccess": "โหลดสำเร็จ",
         "importError": "ไฟล์ไม่ถูกต้อง",
+        "csvError": "ไฟล์ CSV ไม่ถูกต้อง: ต้องมีคอลัมน์ — Type, Name, Amount, Frequency, Category",
+        "privacyModeBlocked": "ปิดโหมดความเป็นส่วนตัวก่อนส่งออกข้อมูล",
+        "templateCurrencyNote": "จำนวนเงินในแบบฟอร์มตัวอย่างเป็นสกุล THB และจะถูกปรับเป็น",
         "csvExport": "ส่งออก CSV",
         "csvImport": "นำเข้า CSV",
         "wiki": "คู่มือ CSV และวิกิ"
@@ -271,7 +282,14 @@
     "resilience": {
         "Resilient": "แข็งแกร่ง",
         "Strained": "ตึงตัว",
-        "Critical": "วิกฤต"
+        "Critical": "วิกฤต",
+        "breakdown": {
+            "savingsRate": "อัตราการออม",
+            "needsRatio": "สัดส่วนความจำเป็น",
+            "wantsRatio": "สัดส่วนความต้องการ",
+            "assetsBuffer": "สำรองทรัพย์สิน",
+            "insurance": "ประกัน"
+        }
     },
     "onboarding": {
         "title": "ยินดีต้อนรับสู่ FinnaFlow",
@@ -298,6 +316,9 @@
         "waiting": "รอข้อมูลเข้า...",
         "noSelected": "ไม่ได้เลือกรายการใดๆ",
         "success": "นำเข้าข้อมูลสำเร็จ {{count}} รายการ",
+        "parsedCount": "พบ {{count}} รายการ",
+        "undoImport": "เลิกทำ",
+        "undoSuccess": "ยกเลิกการนำเข้าสำเร็จ",
         "type": {
             "income": "รายรับ",
             "expense": "รายจ่าย"

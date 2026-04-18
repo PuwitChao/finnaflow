@@ -3,7 +3,7 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { Sliders, X, TrendingUp, TrendingDown, Info } from 'lucide-react';
 import { getCurrencySymbol } from '../../utils/currencies';
-import { normalizeToMonthly, calculateResilienceScore } from '../../utils/financeEngine';
+import { normalizeToMonthly, getResilienceBreakdown } from '../../utils/financeEngine';
 
 export const ProjectorPanel: React.FC = () => {
     const {
@@ -57,7 +57,8 @@ export const ProjectorPanel: React.FC = () => {
     }, 0);
 
     const surplus = projectedIncome - projectedExpense;
-    const score = calculateResilienceScore(incomeItems, expenseItems, assetItems, insuranceItems);
+    const breakdown = getResilienceBreakdown(incomeItems, expenseItems, assetItems, insuranceItems);
+    const score = breakdown.score;
 
     let verdict = { 
         label: 'Resilient', 
@@ -87,16 +88,32 @@ export const ProjectorPanel: React.FC = () => {
                 </button>
             </div>
 
-            <div className={`p-4 mx-6 mt-6 rounded-[1.2rem] flex items-center justify-between ${verdict.bg}`}>
-                <div className="flex items-center gap-2">
-                    <span className={verdict.color}>{verdict.icon}</span>
-                    <span className={`text-xs font-bold tracking-tight ${verdict.color}`}>
-                        {t(`resilience.${verdict.label}`)} ({score}/100)
+            <div className={`p-4 mx-6 mt-6 rounded-[1.2rem] ${verdict.bg}`}>
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                        <span className={verdict.color}>{verdict.icon}</span>
+                        <span className={`text-xs font-bold tracking-tight ${verdict.color}`}>
+                            {t(`resilience.${verdict.label}`)} ({score}/100)
+                        </span>
+                    </div>
+                    <span className={`text-xs font-bold ${verdict.color}`}>
+                        {getCurrencySymbol(currency)}{isPrivacyMode ? '•••••' : surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}{t('projector.perMonth')}
                     </span>
                 </div>
-                <span className={`text-xs font-bold ${verdict.color}`}>
-                    {getCurrencySymbol(currency)}{isPrivacyMode ? '•••••' : surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}{t('projector.perMonth')}
-                </span>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2 border-t border-current/10">
+                    {[
+                        { label: t('resilience.breakdown.savingsRate'), score: breakdown.savingsScore, max: 40 },
+                        { label: t('resilience.breakdown.needsRatio'), score: breakdown.needsScore, max: 30 },
+                        { label: t('resilience.breakdown.wantsRatio'), score: breakdown.wantsScore, max: 20 },
+                        { label: t('resilience.breakdown.assetsBuffer'), score: breakdown.assetsScore, max: 5 },
+                        { label: t('resilience.breakdown.insurance'), score: breakdown.insuranceScore, max: 5 },
+                    ].map(({ label, score: s, max }) => (
+                        <div key={label} className="flex items-center justify-between text-[9px] font-bold text-gray-500 dark:text-gray-400">
+                            <span className="truncate">{label}</span>
+                            <span className={s >= max ? 'text-emerald-500' : 'text-gray-400'}>{Math.round(s)}/{max}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div className="p-6 space-y-8 max-h-[50vh] overflow-y-auto scrollbar-hide">

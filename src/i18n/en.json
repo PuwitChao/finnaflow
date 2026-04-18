@@ -84,7 +84,9 @@
             "value": "Value",
             "frequency": "Frequency",
             "bucket": "Bucket",
-            "endDate": "End Date"
+            "endDate": "End Date",
+            "cancel": "Cancel",
+            "editFrequency": "Edit frequency"
         },
         "hints": {
             "label": "Name of the source or spending item",
@@ -105,6 +107,7 @@
             "userGuide": "Interactive HTML User Guide"
         },
         "itemAdded": "Item added successfully",
+        "amountRequired": "Enter an amount greater than zero",
         "noItems": "No Items Added",
         "noItemsHint": "Use the form above to add your first item",
         "defaultItem": "Item",
@@ -112,6 +115,8 @@
         "duplicate": "Duplicate",
         "lastUpdated": "Last Update",
         "expires": "Expires",
+        "expiresOn": "Expires",
+        "expired": "Expired",
         "netWorth": {
             "title": "Net Worth Explorer",
             "subtitle": "Assets - Liabilities",
@@ -150,7 +155,10 @@
                 "years": "Years",
                 "months": "Months",
                 "reached": "Goal Reached!",
-                "projectionNote": "Data uses your current net worth as the starting baseline."
+                "projectionNote": "Data uses your current net worth as the starting baseline.",
+                "saveScenario": "Save Scenario",
+                "scenarioSaved": "Scenario saved",
+                "noScenarios": "No saved scenarios yet"
             }
         }
     },
@@ -164,7 +172,7 @@
         "Wants": "Wants",
         "Savings": "Savings",
         "Investments": "Investments",
-        "Debt": "Debt",
+        "Debt": "Loan Payments",
         "Custom": "Custom...",
         "noCategories": "No Categories Defined"
     },
@@ -216,6 +224,9 @@
         },
         "importSuccess": "Loaded successfully",
         "importError": "Invalid file format",
+        "csvError": "Invalid CSV: Expected columns — Type, Name, Amount, Frequency, Category",
+        "privacyModeBlocked": "Disable Privacy Mode before exporting",
+        "templateCurrencyNote": "Template amounts are priced in THB and will be scaled to",
         "csvExport": "Export CSV",
         "csvImport": "Import CSV",
         "wiki": "CSV Guide & Wiki"
@@ -271,7 +282,14 @@
     "resilience": {
         "Resilient": "Resilient",
         "Strained": "Strained",
-        "Critical": "Critical"
+        "Critical": "Critical",
+        "breakdown": {
+            "savingsRate": "Savings Rate",
+            "needsRatio": "Needs Ratio",
+            "wantsRatio": "Wants Ratio",
+            "assetsBuffer": "Assets Buffer",
+            "insurance": "Insurance"
+        }
     },
     "onboarding": {
         "title": "Welcome to FinnaFlow",
@@ -298,6 +316,9 @@
         "waiting": "Waiting for input",
         "noSelected": "No items selected",
         "success": "Imported {{count}} transactions successfully",
+        "parsedCount": "{{count}} transactions found",
+        "undoImport": "Undo",
+        "undoSuccess": "Import undone",
         "type": {
             "income": "Income",
             "expense": "Expense"

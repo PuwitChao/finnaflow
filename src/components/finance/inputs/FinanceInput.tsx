@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFinanceStore, Frequency, Category } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
 import { getCurrencySymbol } from '../../../utils/currencies';
-import { Plus, Trash2, Wallet, Activity, ChevronDown, Copy, Check, X, MoveHorizontal } from 'lucide-react';
+import { Plus, Trash2, Wallet, Activity, ChevronDown, Copy, Check, X, MoveHorizontal, AlertTriangle, Pencil } from 'lucide-react';
 
 interface FinanceInputProps {
     type: 'income' | 'expense';
@@ -15,6 +15,7 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
 
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [batchCategory, setBatchCategory] = useState<Category>('Needs');
+    const [editingFrequencyId, setEditingFrequencyId] = useState<string | null>(null);
 
     const formatAmount = (val: number) => {
         if (isPrivacyMode) return '•••••';
@@ -35,17 +36,23 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
     const [isCustomMode, setIsCustomMode] = useState(false);
     const [endDate, setEndDate] = useState('');
 
+    const today = new Date().toISOString().split('T')[0];
+
     const handleAdd = () => {
         const finalName = isCustomLabelMode ? (customName || t('inputs.labels.defaultItem')) : (name || t('inputs.labels.defaultItem'));
-        if (!amount) return;
+        const parsedAmount = parseFloat(amount);
+        if (!amount || parsedAmount <= 0) {
+            showNotification(t('inputs.amountRequired'), 'error');
+            return;
+        }
         const finalCategory = isCustomMode ? (customCategory || t('inputs.labels.defaultCategory')) : category;
         onAdd({
             id: crypto.randomUUID(),
             name: finalName,
-            amount: parseFloat(amount),
+            amount: parsedAmount,
             frequency,
             category: finalCategory,
-            startDate: new Date().toISOString().split('T')[0],
+            startDate: today,
             endDate: endDate || undefined
         });
         showNotification(t('inputs.itemAdded'), 'success');
@@ -95,6 +102,20 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
         const val = e.target.value;
         if (val === 'Custom') setIsCustomMode(true);
         else { setCategory(val); setIsCustomMode(false); }
+    };
+
+    const handleFrequencyEdit = (id: string, newFrequency: Frequency) => {
+        updateItems([id], type, { frequency: newFrequency });
+        setEditingFrequencyId(null);
+    };
+
+    const getExpiryState = (item: { endDate?: string }): 'none' | 'expiring' | 'expired' => {
+        if (!item.endDate) return 'none';
+        if (item.endDate < today) return 'expired';
+        const sevenDaysOut = new Date();
+        sevenDaysOut.setDate(sevenDaysOut.getDate() + 7);
+        if (item.endDate <= sevenDaysOut.toISOString().split('T')[0]) return 'expiring';
+        return 'none';
     };
 
     const title = type === 'income' ? t('inputs.income.title') : t('inputs.expense.title');
@@ -163,7 +184,7 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
                             <label className="text-[13px] font-semibold text-gray-400">{t('inputs.labels.value')}</label>
                             <span className="text-[10px] text-gray-300 dark:text-gray-500 mb-1">{t('inputs.hints.amount')}</span>
                         </div>
-                        <input type="number" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} onKeyDown={handleKeyDown} className="w-full apple-input" />
+                        <input type="number" placeholder="0" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} onKeyDown={handleKeyDown} className="w-full apple-input" />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
@@ -207,36 +228,75 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
                         <p className="text-sm font-semibold text-gray-300 dark:text-gray-600">{t('inputs.noItems')}</p>
                     </div>
                 ) : (
-                    items.map((item) => (
-                        <div 
-                            key={item.id} 
-                            onClick={(e) => toggleSelection(item.id, e)}
-                            className={`group flex items-center justify-between p-5 rounded-2xl transition-all duration-300 cursor-pointer ${selectedIds.has(item.id) ? 'bg-blue-500/10 dark:bg-blue-500/20 ring-2 ring-blue-500 shadow-lg' : 'bg-white/50 dark:bg-[#2C2C2E]/50 hover:bg-white dark:hover:bg-[#2C2C2E]/80'}`}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedIds.has(item.id) ? 'bg-blue-500 text-white' : 'border-2 border-gray-200 dark:border-white/10 text-transparent'}`}>
-                                    <Check size={14} strokeWidth={3} />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7]">{item.name}</span>
-                                    <div className="flex items-center gap-3 mt-1.5">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{symbol}{formatAmount(item.amount)} / {t(`frequency.${item.frequency}`)}</span>
-                                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold border ${item.category === 'Needs' ? 'bg-blue-50 text-blue-500 border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/20' :
-                                            item.category === 'Wants' ? 'bg-rose-50 text-rose-500 border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20' :
-                                                item.category === 'Savings' ? 'bg-emerald-50 text-emerald-500 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20' :
-                                                    'bg-purple-50 text-purple-500 border-purple-100 dark:bg-purple-500/10 dark:border-purple-500/20'
-                                            }`}>
-                                            {t(`category.${item.category}`)}
-                                        </span>
+                    items.map((item) => {
+                        const expiryState = getExpiryState(item);
+                        return (
+                            <div
+                                key={item.id}
+                                onClick={(e) => toggleSelection(item.id, e)}
+                                className={`group flex items-center justify-between p-5 rounded-2xl transition-all duration-300 cursor-pointer ${selectedIds.has(item.id) ? 'bg-blue-500/10 dark:bg-blue-500/20 ring-2 ring-blue-500 shadow-lg' : expiryState === 'expired' ? 'bg-gray-100/80 dark:bg-white/5 opacity-60' : 'bg-white/50 dark:bg-[#2C2C2E]/50 hover:bg-white dark:hover:bg-[#2C2C2E]/80'}`}
+                            >
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shrink-0 ${selectedIds.has(item.id) ? 'bg-blue-500 text-white' : 'border-2 border-gray-200 dark:border-white/10 text-transparent'}`}>
+                                        <Check size={14} strokeWidth={3} />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7] truncate">{item.name}</span>
+                                            {expiryState === 'expired' && (
+                                                <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase bg-gray-200 text-gray-500 dark:bg-white/10 dark:text-gray-400">{t('inputs.expired')}</span>
+                                            )}
+                                            {expiryState === 'expiring' && (
+                                                <span title={`${t('inputs.expiresOn')} ${item.endDate}`}>
+                                                    <AlertTriangle size={12} className="shrink-0 text-amber-500" />
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{symbol}{formatAmount(item.amount)}</span>
+                                            {editingFrequencyId === item.id ? (
+                                                <select
+                                                    autoFocus
+                                                    defaultValue={item.frequency}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onChange={(e) => { e.stopPropagation(); handleFrequencyEdit(item.id, e.target.value as Frequency); }}
+                                                    onBlur={() => setEditingFrequencyId(null)}
+                                                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-blue-500 text-white border-none focus:ring-0 cursor-pointer"
+                                                >
+                                                    <option value="Weekly">{t('frequency.Weekly')}</option>
+                                                    <option value="Monthly">{t('frequency.Monthly')}</option>
+                                                    <option value="Yearly">{t('frequency.Yearly')}</option>
+                                                </select>
+                                            ) : (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setEditingFrequencyId(item.id); }}
+                                                    className="text-[10px] font-medium text-gray-400 hover:text-blue-500 flex items-center gap-1 transition-colors"
+                                                    title={t('inputs.labels.editFrequency')}
+                                                >
+                                                    / {t(`frequency.${item.frequency}`)}
+                                                    <Pencil size={9} />
+                                                </button>
+                                            )}
+                                            <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold border ${item.category === 'Needs' ? 'bg-blue-50 text-blue-500 border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/20' :
+                                                item.category === 'Wants' ? 'bg-rose-50 text-rose-500 border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20' :
+                                                    item.category === 'Savings' ? 'bg-emerald-50 text-emerald-500 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20' :
+                                                        'bg-purple-50 text-purple-500 border-purple-100 dark:bg-purple-500/10 dark:border-purple-500/20'
+                                                }`}>
+                                                {t(`category.${item.category}`) === `category.${item.category}` ? item.category : t(`category.${item.category}`)}
+                                            </span>
+                                            {item.endDate && expiryState === 'none' && (
+                                                <span className="text-[9px] text-gray-400 font-medium">{t('inputs.expiresOn')} {item.endDate}</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 shrink-0 ml-2">
+                                    <button onClick={(e) => { e.stopPropagation(); duplicateItem(item.id, type); }} className="p-2 text-gray-300 hover:text-blue-500"><Copy size={16} /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); onRemove(item.id); }} className="p-2 text-gray-300 hover:text-rose-500"><Trash2 size={18} /></button>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                                <button onClick={(e) => { e.stopPropagation(); duplicateItem(item.id, type); }} className="p-2 text-gray-300 hover:text-blue-500"><Copy size={16} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); onRemove(item.id); }} className="p-2 text-gray-300 hover:text-rose-500"><Trash2 size={18} /></button>
-                            </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
@@ -254,8 +314,8 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="relative group">
-                                <select 
-                                    value={batchCategory} 
+                                <select
+                                    value={batchCategory}
                                     onChange={(e) => setBatchCategory(e.target.value as Category)}
                                     className="bg-white/10 dark:bg-black/10 text-white dark:text-black text-xs font-bold py-2.5 pl-4 pr-10 rounded-2xl border-none appearance-none cursor-pointer focus:ring-0"
                                 >
@@ -267,14 +327,14 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
                                 </select>
                                 <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-white dark:text-black pointer-events-none" />
                             </div>
-                            <button 
+                            <button
                                 onClick={handleBatchCategoryChange}
                                 className="bg-blue-500 text-white text-xs font-black px-6 py-2.5 rounded-2xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-blue-500/25"
                             >
                                 <MoveHorizontal size={14} />
                                 {t('batch.moveTo')}
                             </button>
-                            <button 
+                            <button
                                 onClick={handleBatchDelete}
                                 className="bg-rose-500 text-white p-2.5 rounded-2xl hover:scale-105 active:scale-95 transition-all"
                                 title={t('batch.delete')}

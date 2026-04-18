@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFinanceStore, FinanceItem } from './store/useFinanceStore';
 import { useI18n } from './i18n';
+import { APP_VERSION } from './constants/version';
+import { scaleTemplateAmount, CURRENCY_SCALE } from './utils/currencies';
 import { SankeyChart } from './components/viz/SankeyChart';
 import { ProjectorPanel } from './components/viz/ProjectorPanel';
 import { AppGuide } from './components/layout/modals/AppGuide';
@@ -22,7 +24,7 @@ import { UserGuideView } from './components/layout/modals/UserGuideView';
 
 function App() {
     const store = useFinanceStore();
-    const { incomeItems, expenseItems, assetItems, liabilityItems, isUnlocked, darkMode, clearSession, hasSetPreferences } = store;
+    const { incomeItems, expenseItems, assetItems, liabilityItems, isUnlocked, darkMode, clearSession, hasSetPreferences, isPrivacyMode } = store;
     const { t, language } = useI18n();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -75,7 +77,11 @@ function App() {
     };
 
     const handleSave = () => {
-        const data = { version: '2.1.0', incomeItems, expenseItems, isUnlocked, darkMode, language };
+        if (isPrivacyMode) {
+            store.showNotification(t('file.privacyModeBlocked'), 'error');
+            return;
+        }
+        const data = { version: APP_VERSION, incomeItems, expenseItems, isUnlocked, darkMode, language };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -106,6 +112,10 @@ function App() {
     };
 
     const handleCSVExport = () => {
+        if (isPrivacyMode) {
+            store.showNotification(t('file.privacyModeBlocked'), 'error');
+            return;
+        }
         const csv = exportToCSV(incomeItems, expenseItems, assetItems, liabilityItems);
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -130,27 +140,21 @@ function App() {
                     assets.forEach(item => store.addAsset(item));
                     liabilities.forEach(item => store.addLiability(item));
                     store.showNotification(t('file.importSuccess'), 'success');
+                } else {
+                    store.showNotification(t('file.csvError'), 'error');
                 }
-            } catch { store.showNotification(t('file.importError'), 'error'); }
+            } catch { store.showNotification(t('file.csvError'), 'error'); }
         };
         reader.readAsText(file);
         event.target.value = '';
     };
 
     const handleLoadTemplate = (type: 'beginner' | 'standard') => {
-        // Shared scaling logic (ideally would be in a util)
-        const currencyScale: Record<string, number> = {
-            THB: 1, USD: 0.028, EUR: 0.026, GBP: 0.022, JPY: 4.2, CNY: 0.2, INR: 2.35, KRW: 37.5, AUD: 0.043, CAD: 0.039, SGD: 0.038,
-        };
-        const scaleAmount = (thbAmount: number): number => {
-            const scale = currencyScale[store.currency] ?? 0.028;
-            const raw = thbAmount * scale;
-            if (raw < 10) return Math.round(raw * 100) / 100;
-            if (raw < 100) return Math.round(raw / 5) * 5;
-            if (raw < 1000) return Math.round(raw / 50) * 50;
-            if (raw < 10000) return Math.round(raw / 500) * 500;
-            return Math.round(raw / 5000) * 5000;
-        };
+        if (store.currency !== 'THB' && !window.confirm(
+            `${t('file.templateCurrencyNote')} ${store.currency}. ${language === 'th' ? 'ดำเนินการต่อ?' : 'Continue?'}`
+        )) return;
+
+        const scaleAmount = (thbAmount: number): number => scaleTemplateAmount(thbAmount, store.currency);
 
         let income: FinanceItem[];
         let expenses: FinanceItem[];
