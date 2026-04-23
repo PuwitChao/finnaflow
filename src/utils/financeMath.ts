@@ -1,28 +1,23 @@
 import { FinanceItem } from '../store/useFinanceStore';
-import { WEEKS_PER_MONTH } from '../constants/version';
+import { normalizeToMonthly } from './financeEngine';
 
 /**
  * Normalizes any frequency-based finance item into a monthly amount.
+ * Delegates to the canonical normalizeToMonthly from financeEngine to
+ * ensure consistency across the whole app.
  */
-export const getMonthlyAmount = (item: FinanceItem): number => {
-    switch (item.frequency) {
-        case 'Weekly':
-            return item.amount * WEEKS_PER_MONTH;
-        case 'Yearly':
-            return item.amount / 12;
-        case 'Monthly':
-        default:
-            return item.amount;
-    }
-};
+export const getMonthlyAmount = (item: FinanceItem): number =>
+    normalizeToMonthly(item.amount, item.frequency);
 
 /**
  * Calculates current total monthly surplus (savings velocity).
+ * NOTE: Can return a negative number if expenses exceed income — callers
+ * should handle and display the deficit rather than clamping to zero.
  */
 export const getMonthlySurplus = (income: FinanceItem[], expenses: FinanceItem[]): number => {
-    const totalIncome = income.reduce((acc, i) => acc + getMonthlyAmount(i), 0);
-    const totalExpenses = expenses.reduce((acc, i) => acc + getMonthlyAmount(i), 0);
-    return Math.max(0, totalIncome - totalExpenses);
+    const totalIncome = income.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+    const totalExpenses = expenses.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+    return totalIncome - totalExpenses;
 };
 
 /**

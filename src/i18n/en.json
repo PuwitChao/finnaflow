@@ -328,10 +328,20 @@
         "selected": "Selected {{count}} items",
         "moveTo": "Change Category",
         "delete": "Delete Selected",
+        "confirmDelete": "Delete the selected items? This cannot be undone.",
         "cancel": "Cancel",
         "confirm": "Confirm Change",
         "flipAll": "Flip All Types",
         "selectAll": "Select All",
         "deselectAll": "Deselect All"
+    },
+    "fire": {
+        "roiHint": "Historical S\u0026P 500 average is approx. 7\u201310%.",
+        "swrHint": "Trinity Study suggests 4% for a 30-year retirement.",
+        "criticalState": "Critical State",
+        "journeyProgress": "Journey Progress",
+        "progressStart": "Today",
+        "progressEnd": "Financial Freedom",
+        "deficitWarning": "Spending exceeds income"
     }
 }

@@ -8,6 +8,7 @@ import {
     calculateFireNumber,
     solveForFireDuration
 } from '../../../utils/financeMath';
+import { normalizeToMonthly } from '../../../utils/financeEngine';
 
 interface FireTrackerOverlayProps {
     onClose: () => void;
@@ -32,12 +33,11 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
     };
 
     const monthlySurplus = getMonthlySurplus(incomeItems, expenseItems);
+    const isDeficit = monthlySurplus < 0;
 
+    // Annualized expenses represent the lifestyle we want to maintain
     const annualExpenses = expenseItems.reduce((acc, item) => {
-        let monthly = item.amount;
-        if (item.frequency === 'Weekly') monthly = (item.amount * 52) / 12;
-        if (item.frequency === 'Yearly') monthly = item.amount / 12;
-        return acc + (monthly * 12);
+        return acc + (normalizeToMonthly(item.amount, item.frequency) * 12);
     }, 0);
 
     const fireNumber = useMemo(() => calculateFireNumber(annualExpenses, swr), [annualExpenses, swr]);
@@ -78,7 +78,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                     <div className="space-y-2">
                         <div className="flex items-center gap-2 text-[#007AFF] font-bold uppercase tracking-[0.2em] text-[10px]">
                             <TrendingUp size={14} />
-                            <span>Projection Mode</span>
+                            <span>{t('projector.enterMode')}</span>
                         </div>
                         <h2 className="text-3xl font-black text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight leading-tight">
                             {t('inputs.netWorth.tracker.title')}
@@ -97,7 +97,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                                 onChange={(e) => setRoi(parseFloat(e.target.value))}
                                 className="w-full apple-range"
                             />
-                            <p className="text-[10px] text-gray-400 font-medium">Historical S&P 500 average is approx. 7-10%.</p>
+                            <p className="text-[10px] text-gray-400 font-medium">{t('fire.roiHint')}</p>
                         </div>
 
                         {/* SWR Slider */}
@@ -111,7 +111,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                                 onChange={(e) => setSwr(parseFloat(e.target.value))}
                                 className="w-full apple-range"
                             />
-                            <p className="text-[10px] text-gray-400 font-medium">Trinity Study suggests 4% for a 30-year retirement.</p>
+                            <p className="text-[10px] text-gray-400 font-medium">{t('fire.swrHint')}</p>
                         </div>
                     </div>
 
@@ -168,9 +168,12 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                         </div>
                         <div className="apple-card p-6 bg-white dark:bg-[#2C2C2E] border-0 shadow-sm space-y-1">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('inputs.netWorth.tracker.monthlySurplus')}</p>
-                            <h4 className={`text-2xl font-black text-emerald-500 ${isPrivacyMode ? 'blur-sm' : ''}`}>
-                                +{formatAmount(monthlySurplus)}
+                            <h4 className={`text-2xl font-black ${isDeficit ? 'text-rose-500' : 'text-emerald-500'} ${isPrivacyMode ? 'blur-sm' : ''}`}>
+                                {isDeficit ? '' : '+'}{formatAmount(monthlySurplus)}
                             </h4>
+                            {isDeficit && (
+                                <p className="text-[10px] text-rose-400 font-semibold">{t('fire.deficitWarning')}</p>
+                            )}
                         </div>
                     </div>
 
@@ -181,7 +184,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                         </div>
 
                         {totalMonths === Infinity ? (
-                            <h3 className="text-4xl font-black text-rose-500 dark:text-rose-400">Critical State</h3>
+                            <h3 className="text-4xl font-black text-rose-500 dark:text-rose-400">{t('fire.criticalState')}</h3>
                         ) : totalMonths === 0 ? (
                             <h3 className="text-5xl font-black text-emerald-500">{t('inputs.netWorth.tracker.reached')}</h3>
                         ) : (
@@ -201,7 +204,7 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                     {/* Progress Bar */}
                     <div className="mt-12 space-y-3">
                         <div className="flex justify-between items-end px-1">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Journey Progress</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('fire.journeyProgress')}</span>
                             <span className="text-xs font-black text-[#1D1D1F] dark:text-[#F5F5F7]">{progressPercent.toFixed(1)}%</span>
                         </div>
                         <div className="h-4 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden p-1 border border-gray-200 dark:border-white/5">
@@ -211,8 +214,8 @@ export const FireTrackerOverlay: React.FC<FireTrackerOverlayProps> = ({ onClose 
                             />
                         </div>
                         <div className="flex justify-between text-[10px] font-medium text-gray-400 italic px-1">
-                            <span>Today</span>
-                            <span>Financial Freedom</span>
+                            <span>{t('fire.progressStart')}</span>
+                            <span>{t('fire.progressEnd')}</span>
                         </div>
                     </div>
                 </div>

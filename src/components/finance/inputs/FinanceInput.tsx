@@ -88,7 +88,7 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
     };
 
     const handleBatchDelete = () => {
-        if (window.confirm(t('header.newSession'))) {
+        if (window.confirm(t('batch.confirmDelete'))) {
             removeItems(Array.from(selectedIds), type);
             setSelectedIds(new Set());
         }

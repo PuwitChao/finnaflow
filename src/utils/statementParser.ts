@@ -51,14 +51,16 @@ const IGNORE_KEYWORDS = ['ยอดยกมา', 'BALANCE BROUGHT FORWARD'];
 /**
  * Heuristic 1: Credit Card style (ttb/standard)
  * Pattern: DD/MM/YYYY DD/MM/YYYY DESCRIPTION AMOUNT
+ * NOTE: Defined as a source string and instantiated inside parseStatement
+ * to avoid the stateful `lastIndex` bug with module-level /g regexes.
  */
-const CC_PATTERN = /(\d{2}\/\d{2}\/\d{4})\s+(\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+(-?[\d,]+\.\d{2})/g;
+const CC_PATTERN_SRC = '(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(.+?)\\s+(-?[\\d,]+\\.\\d{2})';
 
 /**
  * Heuristic 2: Bank App (K-PLUS/Mobile)
  * Pattern: DD-MM-YY HH:mm TYPE [AMOUNT] [BALANCE] DETAILS
  */
-const MOBILE_PATTERN = /(\d{2}-\d{2}-\d{2})\s+(\d{2}:\d{2})\s+(.+?)\s+(-?[\d,]+\.\d{2})\s+([\d,]+\.\d{2})?\s+(.+)/g;
+const MOBILE_PATTERN_SRC = '(\\d{2}-\\d{2}-\\d{2})\\s+(\\d{2}:\\d{2})\\s+(.+?)\\s+(-?[\\d,]+\\.\\d{2})\\s+([\\d,]+\\.\\d{2})?\\s+(.+)';
 
 /**
  * Suggests a category based on the description.
@@ -144,6 +146,9 @@ const cleanAmount = (amt: string): number => {
  */
 export const parseStatement = (text: string): ParsedTransaction[] => {
     const results: ParsedTransaction[] = [];
+
+    // Instantiate fresh regex objects each call to avoid stateful lastIndex issues
+    const CC_PATTERN = new RegExp(CC_PATTERN_SRC, 'g');
 
     // Try Credit Card Pattern first
     let match;

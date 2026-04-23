@@ -11,6 +11,10 @@ import { InsuranceAudit } from './components/viz/InsuranceAudit';
 import { exportToCSV, parseCSV } from './utils/csvProcessor';
 import { RefreshCw } from 'lucide-react';
 
+// App version — kept in sync with package.json
+import pkgJson from '../package.json';
+const APP_VERSION: string = pkgJson.version;
+
 // New Modular Components
 import { FinanceInput } from './components/finance/inputs/FinanceInput';
 import { NetWorthInput } from './components/finance/inputs/NetWorthInput';
@@ -109,6 +113,7 @@ function App() {
             } catch { store.showNotification(t('file.importError'), 'error'); }
         };
         reader.readAsText(file);
+        event.target.value = ''; // Reset so the same file can be re-imported
     };
 
     const handleCSVExport = () => {

@@ -29,6 +29,47 @@ export const exportToCSV = (income: FinanceItem[], expenses: FinanceItem[], asse
     return lines.join('\n');
 };
 
+/**
+ * Splits a single CSV line into fields, correctly handling quoted fields that
+ * may contain commas or escaped double-quotes ("").
+ *
+ * Replaces the old regex-based approach which silently broke on commas inside
+ * quoted strings (e.g. "Smith, John" would be split at the comma).
+ */
+const splitCSVLine = (line: string): string[] => {
+    const fields: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                // Peek ahead: "" is an escaped quote inside a field
+                if (i + 1 < line.length && line[i + 1] === '"') {
+                    current += '"';
+                    i++; // skip the second quote
+                } else {
+                    inQuotes = false; // closing quote
+                }
+            } else {
+                current += ch;
+            }
+        } else {
+            if (ch === '"') {
+                inQuotes = true;
+            } else if (ch === ',') {
+                fields.push(current);
+                current = '';
+            } else {
+                current += ch;
+            }
+        }
+    }
+    fields.push(current); // push final field
+    return fields;
+};
+
 export const parseCSV = (csvText: string): { income: FinanceItem[], expenses: FinanceItem[], assets: NetWorthItem[], liabilities: NetWorthItem[] } => {
     const lines = csvText.split(/\r?\n/);
     const income: FinanceItem[] = [];
@@ -36,20 +77,19 @@ export const parseCSV = (csvText: string): { income: FinanceItem[], expenses: Fi
     const assets: NetWorthItem[] = [];
     const liabilities: NetWorthItem[] = [];
 
-    // Skip header
+    // Skip header row
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Simple CSV parser for quoted strings
-        const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-        if (!parts || parts.length < 5) continue;
+        const parts = splitCSVLine(line);
+        if (parts.length < 5) continue;
 
         const type = parts[0].trim().toLowerCase();
-        const name = parts[1].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
+        const name = parts[1].trim();
         const amount = parseFloat(parts[2]);
         const frequency = parts[3].trim() as Frequency;
-        const category = parts[4].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
+        const category = parts[4].trim();
 
         if (type === 'income') {
             income.push({ id: crypto.randomUUID(), name, amount, frequency, category });

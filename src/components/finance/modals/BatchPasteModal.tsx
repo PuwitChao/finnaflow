@@ -27,16 +27,20 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
     const rawLineCount = inputText.split('\n').filter(l => l.trim().length > 0).length;
 
     useEffect(() => {
-        if (inputText.trim()) {
+        if (!inputText.trim()) {
+            setParsedData([]);
+            setSelectedItems(new Set());
+            setEditedCategories({});
+            return;
+        }
+        // Debounce: wait 400ms after last keystroke before running parser
+        const timer = setTimeout(() => {
             const results = parseStatement(inputText);
             setParsedData(results);
             setSelectedItems(new Set(results.map((_, i) => i)));
             setEditedCategories({});
-        } else {
-            setParsedData([]);
-            setSelectedItems(new Set());
-            setEditedCategories({});
-        }
+        }, 400);
+        return () => clearTimeout(timer);
     }, [inputText]);
 
     const toggleItem = (index: number) => {

@@ -62,7 +62,7 @@ export const NetWorthInput: React.FC<NetWorthInputProps> = ({ type }) => {
     };
 
     const handleBatchDelete = () => {
-        if (window.confirm(t('header.newSession'))) {
+        if (window.confirm(t('batch.confirmDelete'))) {
             removeItems(Array.from(selectedIds), type);
             setSelectedIds(new Set());
         }

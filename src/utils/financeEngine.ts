@@ -11,7 +11,7 @@ import { WEEKS_PER_MONTH } from '../constants/version';
 export const normalizeToMonthly = (amount: number, frequency: Frequency): number => {
     switch (frequency) {
         case 'Weekly':
-            return amount * WEEKS_PER_MONTH;
+            return amount * WEEKS_PER_MONTH; // 52/12 — exact, from constants/version
         case 'Monthly':
             return amount;
         case 'Yearly':
