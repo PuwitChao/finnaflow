@@ -62,13 +62,15 @@ const CC_PATTERN_SRC = '(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(\\d{2}\\/\\d{2}\\/\\d{4})
  */
 const MOBILE_PATTERN_SRC = '(\\d{2}-\\d{2}-\\d{2})\\s+(\\d{2}:\\d{2})\\s+(.+?)\\s+(-?[\\d,]+\\.\\d{2})\\s+([\\d,]+\\.\\d{2})?\\s+(.+)';
 
+const CATEGORY_ENTRIES = Object.entries(CATEGORY_MAP);
+
 /**
  * Suggests a category based on the description.
  * Returns both the category and a confidence level.
  */
 export const suggestCategory = (description: string): { category: string; confidence: 'high' | 'low' } => {
     const desc = description.toUpperCase();
-    for (const [keyword, category] of Object.entries(CATEGORY_MAP)) {
+    for (const [keyword, category] of CATEGORY_ENTRIES) {
         if (desc.includes(keyword)) {
             return { category, confidence: 'high' };
         }
