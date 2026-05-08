@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useFinanceStore, FinanceItem, Category } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
 import { parseStatement, ParsedTransaction } from '../../../utils/statementParser';
@@ -24,7 +24,9 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
     const [editedCategories, setEditedCategories] = useState<Record<number, string>>({});
     const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
-    const rawLineCount = inputText.split('\n').filter(l => l.trim().length > 0).length;
+    const rawLineCount = useMemo(() => {
+        return inputText.split('\n').filter(l => l.trim().length > 0).length;
+    }, [inputText]);
 
     useEffect(() => {
         if (!inputText.trim()) {
