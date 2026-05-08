@@ -2,14 +2,6 @@ import { FinanceItem } from '../store/useFinanceStore';
 import { normalizeToMonthly } from './financeEngine';
 
 /**
- * Normalizes any frequency-based finance item into a monthly amount.
- * Delegates to the canonical normalizeToMonthly from financeEngine to
- * ensure consistency across the whole app.
- */
-export const getMonthlyAmount = (item: FinanceItem): number =>
-    normalizeToMonthly(item.amount, item.frequency);
-
-/**
  * Calculates current total monthly surplus (savings velocity).
  * NOTE: Can return a negative number if expenses exceed income — callers
  * should handle and display the deficit rather than clamping to zero.
