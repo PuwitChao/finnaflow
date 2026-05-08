@@ -7,23 +7,33 @@ import { FinanceItem, Frequency, NetWorthItem } from '../store/useFinanceStore';
 
 const CSV_HEADER = 'Type,Name,Amount,Frequency,Category';
 
+const sanitizeCSVField = (field: string): string => {
+    if (!field) return '""';
+    let sanitized = field;
+    const dangerousChars = ['=', '+', '-', '@', '\t', '\r'];
+    if (dangerousChars.some(char => sanitized.startsWith(char))) {
+        sanitized = "'" + sanitized;
+    }
+    return `"${sanitized.replace(/"/g, '""')}"`;
+};
+
 export const exportToCSV = (income: FinanceItem[], expenses: FinanceItem[], assets: NetWorthItem[], liabilities: NetWorthItem[]): string => {
     const lines = [CSV_HEADER];
 
     income.forEach(item => {
-        lines.push(`Income,"${item.name.replace(/"/g, '""')}",${item.amount},${item.frequency},"${item.category.replace(/"/g, '""')}"`);
+        lines.push(`Income,${sanitizeCSVField(item.name)},${item.amount},${item.frequency},${sanitizeCSVField(item.category)}`);
     });
 
     expenses.forEach(item => {
-        lines.push(`Expense,"${item.name.replace(/"/g, '""')}",${item.amount},${item.frequency},"${item.category.replace(/"/g, '""')}"`);
+        lines.push(`Expense,${sanitizeCSVField(item.name)},${item.amount},${item.frequency},${sanitizeCSVField(item.category)}`);
     });
 
     assets.forEach(item => {
-        lines.push(`Asset,"${item.name.replace(/"/g, '""')}",${item.amount},None,"${item.category.replace(/"/g, '""')}"`);
+        lines.push(`Asset,${sanitizeCSVField(item.name)},${item.amount},None,${sanitizeCSVField(item.category)}`);
     });
 
     liabilities.forEach(item => {
-        lines.push(`Liability,"${item.name.replace(/"/g, '""')}",${item.amount},None,"${item.category.replace(/"/g, '""')}"`);
+        lines.push(`Liability,${sanitizeCSVField(item.name)},${item.amount},None,${sanitizeCSVField(item.category)}`);
     });
 
     return lines.join('\n');
