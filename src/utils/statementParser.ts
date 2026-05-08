@@ -3,8 +3,6 @@
  * Extracts financial transactions from raw text pasted from bank apps and statements.
  */
 
-import { FinanceItem, Frequency } from '../store/useFinanceStore';
-
 export interface ParsedTransaction {
     date: string;
     description: string;
@@ -55,12 +53,6 @@ const IGNORE_KEYWORDS = ['ยอดยกมา', 'BALANCE BROUGHT FORWARD'];
  * to avoid the stateful `lastIndex` bug with module-level /g regexes.
  */
 const CC_PATTERN_SRC = '(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(.+?)\\s+(-?[\\d,]+\\.\\d{2})';
-
-/**
- * Heuristic 2: Bank App (K-PLUS/Mobile)
- * Pattern: DD-MM-YY HH:mm TYPE [AMOUNT] [BALANCE] DETAILS
- */
-const MOBILE_PATTERN_SRC = '(\\d{2}-\\d{2}-\\d{2})\\s+(\\d{2}:\\d{2})\\s+(.+?)\\s+(-?[\\d,]+\\.\\d{2})\\s+([\\d,]+\\.\\d{2})?\\s+(.+)';
 
 /**
  * Suggests a category based on the description.
@@ -177,7 +169,6 @@ export const parseStatement = (text: string): ParsedTransaction[] => {
             const mobileMatch = line.match(/^(\d{2}-\d{2}-\d{2})\s+(\d{2}:\d{2})\s+(.+?)\s+(-?[\d,]+\.\d{2})/);
             if (mobileMatch) {
                 const date = mobileMatch[1];
-                const time = mobileMatch[2];
                 const typeText = mobileMatch[3].trim();
                 const amountStr = mobileMatch[4];
                 const amount = cleanAmount(amountStr);
