@@ -223,9 +223,20 @@ export const getResilienceBreakdown = (
         return { score: 0, savingsScore: 0, needsScore: 0, wantsScore: 0, assetsScore: 0, insuranceScore: 0, savingsRate: 0, needsRate: 0, wantsRate: 0 };
     }
 
-    const needs = expenseItems.filter(i => i.category === 'Needs').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
-    const wants = expenseItems.filter(i => i.category === 'Wants').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
-    const savings = expenseItems.filter(i => i.category === 'Savings' || i.category === 'Investments').reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
+    let needs = 0;
+    let wants = 0;
+    let savings = 0;
+
+    for (const item of expenseItems) {
+        const monthlyAmount = normalizeToMonthly(item.amount, item.frequency);
+        if (item.category === 'Needs') {
+            needs += monthlyAmount;
+        } else if (item.category === 'Wants') {
+            wants += monthlyAmount;
+        } else if (item.category === 'Savings' || item.category === 'Investments') {
+            savings += monthlyAmount;
+        }
+    }
 
     const savingsRate = savings / totalIncome;
     const needsRate = needs / totalIncome;
