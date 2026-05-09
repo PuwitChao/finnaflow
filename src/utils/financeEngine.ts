@@ -206,19 +206,6 @@ export const generateSankeyConfig = (
     return { nodes, links, nodeColors, nodeMetadata };
 };
 
-/** Individual score components from the resilience calculation. */
-export interface ResilienceBreakdown {
-    score: number;
-    savingsScore: number;
-    needsScore: number;
-    wantsScore: number;
-    assetsScore: number;
-    insuranceScore: number;
-    savingsRate: number;
-    needsRate: number;
-    wantsRate: number;
-}
-
 /**
  * Calculates a financial resilience score (0–100) and returns a full breakdown
  * of each component so the UI can explain the score to the user.
@@ -228,7 +215,7 @@ export const getResilienceBreakdown = (
     expenseItems: FinanceItem[],
     assetItems: { amount?: number }[],
     insuranceItems: { type: string }[] = []
-): ResilienceBreakdown => {
+) => {
     const totalIncome = incomeItems.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
     const totalExpense = expenseItems.reduce((acc, i) => acc + normalizeToMonthly(i.amount, i.frequency), 0);
 
