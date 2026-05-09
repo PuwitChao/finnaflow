@@ -3,8 +3,6 @@
  * Extracts financial transactions from raw text pasted from bank apps and statements.
  */
 
-import { FinanceItem, Frequency } from '../store/useFinanceStore';
-
 export interface ParsedTransaction {
     date: string;
     description: string;
@@ -43,6 +41,8 @@ const CATEGORY_MAP: Record<string, string> = {
     'MEA': 'Bills & Utilities',
 };
 
+const CATEGORY_ENTRIES = Object.entries(CATEGORY_MAP);
+
 // Thai Keywords for Type Detection
 const INCOME_KEYWORDS = ['รับโอน', 'ฝากเงิน', 'เงินโอน', 'RECEIVE', 'DEPOSIT'];
 const EXPENSE_KEYWORDS = ['ชําระเงิน', 'โอนเงิน', 'โอนไป', 'หักบัญชี', 'ค่าธรรมเนียม', 'ถอนเงิน', 'ซื้อหน่วยลงทุน', 'PAYMENT', 'TRANSFER', 'WITHDRAW', 'DEBIT', 'FEE'];
@@ -57,18 +57,12 @@ const IGNORE_KEYWORDS = ['ยอดยกมา', 'BALANCE BROUGHT FORWARD'];
 const CC_PATTERN_SRC = '(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(.+?)\\s+(-?[\\d,]+\\.\\d{2})';
 
 /**
- * Heuristic 2: Bank App (K-PLUS/Mobile)
- * Pattern: DD-MM-YY HH:mm TYPE [AMOUNT] [BALANCE] DETAILS
- */
-const MOBILE_PATTERN_SRC = '(\\d{2}-\\d{2}-\\d{2})\\s+(\\d{2}:\\d{2})\\s+(.+?)\\s+(-?[\\d,]+\\.\\d{2})\\s+([\\d,]+\\.\\d{2})?\\s+(.+)';
-
-/**
  * Suggests a category based on the description.
  * Returns both the category and a confidence level.
  */
 export const suggestCategory = (description: string): { category: string; confidence: 'high' | 'low' } => {
     const desc = description.toUpperCase();
-    for (const [keyword, category] of Object.entries(CATEGORY_MAP)) {
+    for (const [keyword, category] of CATEGORY_ENTRIES) {
         if (desc.includes(keyword)) {
             return { category, confidence: 'high' };
         }
@@ -177,7 +171,6 @@ export const parseStatement = (text: string): ParsedTransaction[] => {
             const mobileMatch = line.match(/^(\d{2}-\d{2}-\d{2})\s+(\d{2}:\d{2})\s+(.+?)\s+(-?[\d,]+\.\d{2})/);
             if (mobileMatch) {
                 const date = mobileMatch[1];
-                const time = mobileMatch[2];
                 const typeText = mobileMatch[3].trim();
                 const amountStr = mobileMatch[4];
                 const amount = cleanAmount(amountStr);
