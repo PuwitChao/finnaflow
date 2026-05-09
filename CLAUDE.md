@@ -38,7 +38,7 @@ When `isProjectionMode` is true, the engine applies `categoryMultipliers`, `macr
 |---|---|
 | `src/store/useFinanceStore.ts` | All app state — income, expenses, assets, liabilities, insurance, UI flags |
 | `src/utils/financeEngine.ts` | Sankey config generation, normalization, resilience scoring |
-| `src/utils/financeMath.ts` | Pure math helpers: `getMonthlyAmount`, `getMonthlySurplus`, `solveForFireDuration` |
+| `src/utils/financeMath.ts` | Pure math helpers: `getMonthlySurplus`, `solveForFireDuration` |
 | `src/utils/statementParser.ts` | Regex heuristics to extract transactions from K-Bank/SCB/GrabPay pasted text |
 | `src/utils/csvProcessor.ts` | CSV import/export |
 | `src/i18n/` | English + Thai translation store (`finnaflow-i18n` localStorage key) |
