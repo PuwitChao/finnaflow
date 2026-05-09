@@ -107,6 +107,13 @@ interface FinanceState {
     clearSession: () => void;
     getTotalAssets: () => number;
     getTotalLiabilities: () => number;
+    loadBulkData: (data: { 
+        income?: FinanceItem[], 
+        expenses?: FinanceItem[], 
+        assets?: NetWorthItem[], 
+        liabilities?: NetWorthItem[], 
+        insurance?: InsuranceItem[] 
+    }, merge?: boolean) => void;
     loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[], insurance?: InsuranceItem[] }) => void;
 }
 
@@ -167,14 +174,10 @@ export const useFinanceStore = create<FinanceState>()(
                         const netWorth = totalAssets - totalLiabilities;
                         const today = new Date().toISOString().split('T')[0];
                         
+                        // Prevent duplicates for the same day
                         const filteredHistory = state.history.filter(h => h.date !== today);
-                        const lastSnapshot = state.history[state.history.length - 1];
-                        
-                        if (lastSnapshot && lastSnapshot.date === today && lastSnapshot.netWorth === netWorth) {
-                            return { _snapshotTimeout: null };
-                        }
-
                         const newHistory = [...filteredHistory, { date: today, netWorth }];
+                        
                         return { history: newHistory.slice(-365), _snapshotTimeout: null };
                     });
                 }, 1000); // 1 second debounce
@@ -264,7 +267,10 @@ export const useFinanceStore = create<FinanceState>()(
             },
             setUnlocked: (unlocked: boolean) => set({ isUnlocked: unlocked }),
             setCurrency: (currency: string) => set({ currency }),
-            setPreferencesSet: (val: boolean) => set({ hasSetPreferences: val }),
+            setPreferencesSet: (val: boolean) => set((state) => ({ 
+                hasSetPreferences: val,
+                activeModal: state.activeModal === 'onboarding' ? null : state.activeModal 
+            })),
             duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability' | 'insurance') => set((state: FinanceState) => {
                 let items: any[] = [];
                 if (type === 'income') items = state.incomeItems;
@@ -337,6 +343,17 @@ export const useFinanceStore = create<FinanceState>()(
                 macroConfig: { inflation: 0, marketShock: 0 },
                 notification: null,
             }),
+            loadBulkData: (data, merge = false) => {
+                set((state: FinanceState) => ({
+                    incomeItems: merge ? [...state.incomeItems, ...(data.income || [])] : (data.income || state.incomeItems),
+                    expenseItems: merge ? [...state.expenseItems, ...(data.expenses || [])] : (data.expenses || state.expenseItems),
+                    assetItems: merge ? [...state.assetItems, ...(data.assets || [])] : (data.assets || state.assetItems),
+                    liabilityItems: merge ? [...state.liabilityItems, ...(data.liabilities || [])] : (data.liabilities || state.liabilityItems),
+                    insuranceItems: merge ? [...state.insuranceItems, ...(data.insurance || [])] : (data.insurance || state.insuranceItems),
+                    lastUpdated: new Date().toISOString()
+                }));
+                get().captureSnapshot();
+            },
             loadExampleTemplate: ({ income, expenses, assets, liabilities, insurance }: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[], insurance?: InsuranceItem[] }) => set({
                 incomeItems: income,
                 expenseItems: expenses,

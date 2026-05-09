@@ -1,5 +1,6 @@
-import React from 'react';
-import Plotly from 'react-plotly.js';
+import createPlotlyComponent from 'react-plotly.js/factory';
+import PlotlyCustom from '../../utils/plotly-custom';
+const Plot = createPlotlyComponent(PlotlyCustom);
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 
@@ -35,7 +36,7 @@ export const AssetDistributionChart: React.FC = () => {
                     </div>
                 )}
                 
-                <Plotly
+                <Plot
                     data={[{
                         values: values,
                         labels: categories,

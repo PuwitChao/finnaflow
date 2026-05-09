@@ -48,11 +48,13 @@ export const useFinanceIO = () => {
                 const data = JSON.parse(e.target?.result as string);
                 if (data.incomeItems && data.expenseItems) {
                     store.clearSession();
-                    data.incomeItems.forEach((item: FinanceItem) => store.addIncome(item));
-                    data.expenseItems.forEach((item: FinanceItem) => store.addExpense(item));
-                    if (data.assetItems) data.assetItems.forEach((item: any) => store.addAsset(item));
-                    if (data.liabilityItems) data.liabilityItems.forEach((item: any) => store.addLiability(item));
-                    if (data.insuranceItems) data.insuranceItems.forEach((item: any) => store.addInsurance(item));
+                    store.loadBulkData({
+                        income: data.incomeItems,
+                        expenses: data.expenseItems,
+                        assets: data.assetItems || [],
+                        liabilities: data.liabilityItems || [],
+                        insurance: data.insuranceItems || []
+                    });
                     store.showNotification(t('file.importSuccess'), 'success');
                 }
             } catch { 

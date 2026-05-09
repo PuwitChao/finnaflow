@@ -97,6 +97,19 @@ export const generateSankeyConfig = (
     const categoryIndices: Record<string, number> = {};
     const categories: string[] = [];
 
+    const toRgba = (hex: string, alpha: number) => {
+        try {
+            const cleanHex = hex.startsWith('#') ? hex : '#808080';
+            const r = parseInt(cleanHex.slice(1, 3), 16);
+            const g = parseInt(cleanHex.slice(3, 5), 16);
+            const b = parseInt(cleanHex.slice(5, 7), 16);
+            if (isNaN(r) || isNaN(g) || isNaN(b)) return `rgba(128, 128, 128, ${alpha})`;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        } catch {
+            return `rgba(128, 128, 128, ${alpha})`;
+        }
+    };
+
     for (let i = 0; i < activeExpenses.length; i++) {
         const item = activeExpenses[i];
         const amount = getProjectedAmount(item);
@@ -184,12 +197,7 @@ export const generateSankeyConfig = (
         const catTotal = catTotals[cat];
         const baseColor = CATEGORY_COLORS[cat] || CATEGORY_COLORS.Other;
         
-        const toRgba = (hex: string, alpha: number) => {
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        };
+
 
         if (catTotal > 0) {
             links.push({
@@ -221,12 +229,7 @@ export const generateSankeyConfig = (
 
         const baseColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.Other;
         
-        const toRgba = (hex: string, alpha: number) => {
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        };
+
 
         links.push({
             source: categoryNodeOffset + catIndex,

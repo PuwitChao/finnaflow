@@ -87,6 +87,7 @@ function App() {
 
     const handleRecalculate = () => {
         setIsRefreshing(true);
+        store.captureSnapshot();
         setTimeout(() => setIsRefreshing(false), 800);
     };
 
