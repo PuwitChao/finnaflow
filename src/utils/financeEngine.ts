@@ -79,7 +79,26 @@ export const generateSankeyConfig = (
         return base * multiplier * infFactor;
     };
 
-    const totalMonthlyExpense = activeExpenses.reduce((acc, item) => acc + getProjectedAmount(item), 0);
+    let totalMonthlyExpense = 0;
+    const projectedExpenseAmounts: number[] = new Array(activeExpenses.length);
+    const catTotals: Record<string, number> = {};
+    const categoryIndices: Record<string, number> = {};
+    const categories: string[] = [];
+
+    for (let i = 0; i < activeExpenses.length; i++) {
+        const item = activeExpenses[i];
+        const amount = getProjectedAmount(item);
+        projectedExpenseAmounts[i] = amount;
+        totalMonthlyExpense += amount;
+
+        const cat = item.category;
+        if (catTotals[cat] === undefined) {
+            catTotals[cat] = 0;
+            categoryIndices[cat] = categories.length;
+            categories.push(cat);
+        }
+        catTotals[cat] += amount;
+    }
 
     const nodes = [
         t('chart.nodes.debtSource'),
@@ -98,8 +117,6 @@ export const generateSankeyConfig = (
         { type: 'wallet' },
         { type: 'unallocated' }
     ];
-
-    const categories = Array.from(new Set(activeExpenses.map(i => i.category)));
     const categoryNodeOffset = nodes.length;
 
     const catColorMap: Record<string, string> = {
@@ -154,9 +171,7 @@ export const generateSankeyConfig = (
     }
 
     categories.forEach((cat, index) => {
-        const catTotal = activeExpenses
-            .filter(i => i.category === cat)
-            .reduce((acc, i) => acc + getProjectedAmount(i), 0);
+        const catTotal = catTotals[cat];
 
         const baseColor = catColorMap[cat] || '#94a3b8';
         const rgbaColor = baseColor.startsWith('#')
@@ -185,8 +200,8 @@ export const generateSankeyConfig = (
     }
 
     activeExpenses.forEach((item, index) => {
-        const catIndex = categories.indexOf(item.category);
-        const itemAmount = getProjectedAmount(item);
+        const catIndex = categoryIndices[item.category];
+        const itemAmount = projectedExpenseAmounts[index];
         const percentage = totalMonthlyIncome > 0 ? (itemAmount / totalMonthlyIncome * 100).toFixed(1) : '0';
 
         const baseColor = catColorMap[item.category] || '#94a3b8';
