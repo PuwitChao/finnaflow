@@ -246,13 +246,3 @@ export const getResilienceBreakdown = (
 
     return { score, savingsScore, needsScore, wantsScore, assetsScore, insuranceScore, savingsRate, needsRate, wantsRate };
 };
-
-/**
- * Calculates a financial resilience score (0-100) based on budgeting best practices.
- */
-export const calculateResilienceScore = (
-    incomeItems: FinanceItem[],
-    expenseItems: FinanceItem[],
-    assetItems: { amount?: number }[],
-    insuranceItems: { type: string }[] = []
-): number => getResilienceBreakdown(incomeItems, expenseItems, assetItems, insuranceItems).score;
