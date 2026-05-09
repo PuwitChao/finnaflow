@@ -1,5 +1,7 @@
 import { FinanceItem, Frequency } from '../store/useFinanceStore';
 import { WEEKS_PER_MONTH } from '../constants/version';
+import { CATEGORY_COLORS, NODE_COLORS, CHART_ALPHA, CHART_ALPHA_EXPENSE } from '../constants/theme';
+
 
 /**
  * Normalizes a financial amount to its monthly average based on frequency.
@@ -45,6 +47,22 @@ export interface SankeyData {
     /** Array of node colors. */
     nodeColors: string[];
 }
+/**
+ * Calculates the projected monthly income for an item, applying market shock multipliers
+ * if the item is flagged as an investment.
+ */
+export const getProjectedIncome = (item: FinanceItem, marketShock: number = 0) => {
+    const base = normalizeToMonthly(item.amount, item.frequency);
+    const mktFactor = 1 - (marketShock / 100);
+    const investmentCategories = ['Investments', 'Dividends', 'Interest', 'Capital Gains'];
+    
+    // Use flag if explicitly set, otherwise fallback to heuristics
+    const isInvestment = item.isInvestment !== undefined 
+        ? item.isInvestment 
+        : (investmentCategories.includes(item.category) || /invest|dividend|interest|yield/i.test(item.name));
+    
+    return isInvestment ? base * mktFactor : base;
+};
 
 /**
  * Generates the Sankey diagram configuration based on user income and expense items.
@@ -63,18 +81,12 @@ export const generateSankeyConfig = (
     const activeExpenses = expenseItems.filter(i => !i.endDate || i.endDate >= today);
 
     const infFactor = 1 + (macro.inflation / 100);
-    const mktFactor = 1 - (macro.marketShock / 100);
 
-    const getProjectedIncome = (item: FinanceItem) => {
-        const base = normalizeToMonthly(item.amount, item.frequency);
-        const isInvestment = item.category === 'Investments' || item.category === 'Dividends' || item.name.toLowerCase().includes('investment');
-        return isInvestment ? base * mktFactor : base;
-    };
-
-    const totalMonthlyIncome = activeIncome.reduce((acc, item) => acc + getProjectedIncome(item), 0);
+    const totalMonthlyIncome = activeIncome.reduce((acc, item) => acc + getProjectedIncome(item, macro.marketShock), 0);
 
     const getProjectedAmount = (item: FinanceItem) => {
         const base = normalizeToMonthly(item.amount, item.frequency);
+
         const multiplier = multipliers[item.category] ?? 1;
         return base * multiplier * infFactor;
     };
@@ -107,10 +119,11 @@ export const generateSankeyConfig = (
     ];
 
     const nodeColors = [
-        '#ef4444',
-        '#64748b',
-        '#059669',
+        NODE_COLORS.DEBT,
+        NODE_COLORS.WALLET,
+        NODE_COLORS.UNALLOCATED,
     ];
+
 
     const nodeMetadata: SankeyData['nodeMetadata'] = [
         { type: 'debt' },
@@ -119,20 +132,13 @@ export const generateSankeyConfig = (
     ];
     const categoryNodeOffset = nodes.length;
 
-    const catColorMap: Record<string, string> = {
-        'Needs': '#007AFF',
-        'Wants': '#FF3B30',
-        'Savings': '#34C759',
-        'Investments': '#AF52DE',
-        'Debt': '#8E8E93',
-    };
-
     categories.forEach(cat => {
         const translatedCat = t(`category.${cat}`);
         nodes.push(translatedCat === `category.${cat}` ? cat : translatedCat);
-        nodeColors.push(catColorMap[cat] || '#94a3b8');
+        nodeColors.push(CATEGORY_COLORS[cat] || CATEGORY_COLORS.Other);
         nodeMetadata.push({ type: 'category', category: cat });
     });
+
 
     const incomeNodeOffset = nodes.length;
     activeIncome.forEach(item => {
@@ -144,9 +150,10 @@ export const generateSankeyConfig = (
     const expenseNodeOffset = nodes.length;
     activeExpenses.forEach(item => {
         nodes.push(item.name);
-        nodeColors.push(catColorMap[item.category] || '#94a3b8');
+        nodeColors.push(CATEGORY_COLORS[item.category] || CATEGORY_COLORS.Other);
         nodeMetadata.push({ type: 'expense', id: item.id, name: item.name, category: item.category });
     });
+
 
     const links: SankeyData['links'] = [];
 
@@ -154,11 +161,13 @@ export const generateSankeyConfig = (
         links.push({
             source: incomeNodeOffset + index,
             target: 1,
-            value: getProjectedIncome(item),
+            value: getProjectedIncome(item, macro.marketShock),
             label: item.name,
-            color: 'rgba(16, 185, 129, 0.2)'
+            color: `rgba(16, 185, 129, ${CHART_ALPHA})`
         });
     });
+
+
 
     if (totalMonthlyExpense > totalMonthlyIncome) {
         links.push({
@@ -166,17 +175,21 @@ export const generateSankeyConfig = (
             target: 1,
             value: totalMonthlyExpense - totalMonthlyIncome,
             label: t('chart.links.debt'),
-            color: 'rgba(239, 68, 68, 0.4)'
+            color: `rgba(239, 68, 68, ${CHART_ALPHA * 2})`
         });
     }
 
+
     categories.forEach((cat, index) => {
         const catTotal = catTotals[cat];
-
-        const baseColor = catColorMap[cat] || '#94a3b8';
-        const rgbaColor = baseColor.startsWith('#')
-            ? `rgba(${parseInt(baseColor.slice(1, 3), 16)}, ${parseInt(baseColor.slice(3, 5), 16)}, ${parseInt(baseColor.slice(5, 7), 16)}, 0.2)`
-            : 'rgba(148, 163, 184, 0.2)';
+        const baseColor = CATEGORY_COLORS[cat] || CATEGORY_COLORS.Other;
+        
+        const toRgba = (hex: string, alpha: number) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
 
         if (catTotal > 0) {
             links.push({
@@ -184,10 +197,11 @@ export const generateSankeyConfig = (
                 target: categoryNodeOffset + index,
                 value: catTotal,
                 label: `${t('chart.nodes.poolPrefix')}${t(`category.${cat}`) || cat}${t('chart.nodes.poolSuffix')}`,
-                color: rgbaColor
+                color: toRgba(baseColor, CHART_ALPHA)
             });
         }
     });
+
 
     if (totalMonthlyIncome > totalMonthlyExpense) {
         links.push({
@@ -195,28 +209,34 @@ export const generateSankeyConfig = (
             target: 2,
             value: totalMonthlyIncome - totalMonthlyExpense,
             label: t('chart.links.surplus'),
-            color: 'rgba(5, 150, 105, 0.4)'
+            color: `rgba(5, 150, 105, ${CHART_ALPHA * 2})`
         });
     }
+
 
     activeExpenses.forEach((item, index) => {
         const catIndex = categoryIndices[item.category];
         const itemAmount = projectedExpenseAmounts[index];
         const percentage = totalMonthlyIncome > 0 ? (itemAmount / totalMonthlyIncome * 100).toFixed(1) : '0';
 
-        const baseColor = catColorMap[item.category] || '#94a3b8';
-        const rgbaColor = baseColor.startsWith('#')
-            ? `rgba(${parseInt(baseColor.slice(1, 3), 16)}, ${parseInt(baseColor.slice(3, 5), 16)}, ${parseInt(baseColor.slice(5, 7), 16)}, 0.1)`
-            : 'rgba(148, 163, 184, 0.1)';
+        const baseColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.Other;
+        
+        const toRgba = (hex: string, alpha: number) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
 
         links.push({
             source: categoryNodeOffset + catIndex,
             target: expenseNodeOffset + index,
             value: itemAmount,
             label: isPrivacyMode ? item.name : `${item.name} (${percentage}%)`,
-            color: rgbaColor
+            color: toRgba(baseColor, CHART_ALPHA_EXPENSE)
         });
     });
+
 
     return { nodes, links, nodeColors, nodeMetadata };
 };

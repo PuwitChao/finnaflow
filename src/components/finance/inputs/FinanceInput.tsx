@@ -35,6 +35,8 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
     const [customCategory, setCustomCategory] = useState('');
     const [isCustomMode, setIsCustomMode] = useState(false);
     const [endDate, setEndDate] = useState('');
+    const [isInvestment, setIsInvestment] = useState(false);
+
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -53,8 +55,10 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
             frequency,
             category: finalCategory,
             startDate: today,
-            endDate: endDate || undefined
+            endDate: endDate || undefined,
+            isInvestment
         });
+
         showNotification(t('inputs.itemAdded'), 'success');
         setName('');
         setCustomName('');
@@ -66,7 +70,9 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
             setIsCustomMode(false);
             setCategory('Needs');
         }
+        setIsInvestment(false);
     };
+
 
     const toggleSelection = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -101,8 +107,14 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
     const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const val = e.target.value;
         if (val === 'Custom') setIsCustomMode(true);
-        else { setCategory(val); setIsCustomMode(false); }
+        else { 
+            setCategory(val); 
+            setIsCustomMode(false); 
+            if (val === 'Investments') setIsInvestment(true);
+            else if (val === 'Needs' || val === 'Wants' || val === 'Debt') setIsInvestment(false);
+        }
     };
+
 
     const handleFrequencyEdit = (id: string, newFrequency: Frequency) => {
         updateItems([id], type, { frequency: newFrequency });
@@ -216,7 +228,21 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
                         )}
                     </div>
                 </div>
+                <div className="flex items-center gap-3 ml-1">
+
+                    <input 
+                        type="checkbox" 
+                        id={`${type}-is-investment`}
+                        checked={isInvestment} 
+                        onChange={(e) => setIsInvestment(e.target.checked)}
+                        className="w-5 h-5 rounded-lg border-none bg-gray-100 dark:bg-white/10 text-blue-500 focus:ring-0 cursor-pointer"
+                    />
+                    <label htmlFor={`${type}-is-investment`} className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 cursor-pointer select-none">
+                        {t('inputs.labels.isInvestment') || 'Mark as Investment (Affected by Market Shock)'}
+                    </label>
+                </div>
                 <button onClick={handleAdd} className="apple-button-primary w-full py-4 mt-2">
+
                     <Plus size={18} strokeWidth={2.5} />
                     {addButton}
                 </button>
@@ -284,7 +310,14 @@ export const FinanceInput: React.FC<FinanceInputProps> = ({ type }) => {
                                                 }`}>
                                                 {t(`category.${item.category}`) === `category.${item.category}` ? item.category : t(`category.${item.category}`)}
                                             </span>
+                                            {item.isInvestment && (
+                                                <span className="text-[10px] px-2 py-0.5 rounded-full font-black uppercase bg-blue-500/10 text-blue-500 border border-blue-500/20 flex items-center gap-1">
+                                                    <Activity size={10} />
+                                                    {t('inputs.investment') || 'Investment'}
+                                                </span>
+                                            )}
                                             {item.endDate && expiryState === 'none' && (
+
                                                 <span className="text-[9px] text-gray-400 font-medium">{t('inputs.expiresOn')} {item.endDate}</span>
                                             )}
                                         </div>

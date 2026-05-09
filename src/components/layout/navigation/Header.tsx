@@ -2,7 +2,8 @@ import React from 'react';
 import { useFinanceStore } from '../../../store/useFinanceStore';
 import { useI18n, Language } from '../../../i18n';
 import { getCurrencySymbol, SUPPORTED_CURRENCIES, Currency } from '../../../utils/currencies';
-import { PieChart, Download, Upload, LogOut, FileText, HelpCircle, Coins, Globe, Sun, Moon, Eye, EyeOff, Sparkles, Wand2, Book } from 'lucide-react';
+import { PieChart, Download, Upload, LogOut, FileText, HelpCircle, Coins, Globe, Sun, Moon, Eye, EyeOff, Sparkles, Wand2, Book, FileDown } from 'lucide-react';
+
 
 interface HeaderProps {
     onSave: () => void;
@@ -11,6 +12,7 @@ interface HeaderProps {
     onCSVExport: () => void;
     onCSVImportClick: () => void;
     onBatchPasteClick: () => void;
+    onGenerateReport: () => void;
     onViewToggle: (view: 'dashboard' | 'wiki' | 'networth' | 'guide') => void;
     onLoadTemplate: (type: 'beginner' | 'standard') => void;
     showLangMenu: boolean;
@@ -29,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
     onCSVExport,
     onCSVImportClick,
     onBatchPasteClick,
+    onGenerateReport,
     onViewToggle,
     onLoadTemplate,
     showLangMenu,
@@ -89,6 +92,8 @@ export const Header: React.FC<HeaderProps> = ({
                     <button onClick={onCSVExport} className="apple-icon-btn" title={t('inputs.hints.csvExport')}><FileText size={19} /></button>
                     <button onClick={onCSVImportClick} className="apple-icon-btn" title={t('inputs.hints.csvImport')}><div className="relative"><FileText size={19} /><div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#FF9500] rounded-full border-2 border-[#F5F5F7] dark:border-[#000000]" /></div></button>
                     <button onClick={onBatchPasteClick} className="apple-icon-btn text-[#007AFF]" title={t('batchPaste.title')}><Wand2 size={19} /></button>
+                    <div className="w-[1px] h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                    <button onClick={onGenerateReport} className="apple-icon-btn text-[#AF52DE]" title={t('file.generateReport') || 'Generate PDF Report'}><FileDown size={19} /></button>
                 </div>
 
                 <div className="flex items-center gap-1 p-1 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/5">

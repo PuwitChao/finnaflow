@@ -117,6 +117,7 @@
         "expires": "Expires",
         "expiresOn": "Expires",
         "expired": "Expired",
+        "confirmNewSession": "Are you sure? This will delete all your current financial data.",
         "netWorth": {
             "title": "Net Worth Explorer",
             "subtitle": "Assets - Liabilities",
@@ -159,7 +160,26 @@
                 "saveScenario": "Save Scenario",
                 "scenarioSaved": "Scenario saved",
                 "noScenarios": "No saved scenarios yet"
+            },
+            "insurance": {
+                "title": "Insurance Audit",
+                "subtitle": "Verify your financial safety net",
+                "addPolicy": "Add Policy",
+                "policyName": "Policy Name",
+                "type": "Type",
+                "premium": "Premium",
+                "coverage": "Coverage",
+                "noPolicies": "No policies added yet",
+                "status": {
+                    "Fully Protected": "Fully Protected",
+                    "Partially Protected": "Partially Protected",
+                    "Unprotected": "Unprotected"
+                }
             }
+        },
+        "tabs": {
+            "networth": "Net Worth",
+            "insurance": "Insurance Audit"
         }
     },
     "frequency": {
@@ -181,6 +201,8 @@
         "recalculate": "Recalculate Flow",
         "recalculating": "Recalculating...",
         "emptyState": "Add some income and expenses to see your flow.",
+        "notEnoughData": "More data needed for trends",
+        "trendHint": "Add more items or check back tomorrow.",
         "nodes": {
             "debtSource": "Debt Source",
             "wallet": "Total Wallet",

@@ -3,7 +3,7 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { Sliders, X, TrendingUp, TrendingDown, Info } from 'lucide-react';
 import { getCurrencySymbol } from '../../utils/currencies';
-import { normalizeToMonthly, getResilienceBreakdown } from '../../utils/financeEngine';
+import { normalizeToMonthly, getResilienceBreakdown, getProjectedIncome } from '../../utils/financeEngine';
 
 export const ProjectorPanel: React.FC = () => {
     const {
@@ -38,16 +38,14 @@ export const ProjectorPanel: React.FC = () => {
     const categories = Array.from(new Set(expenseItems.map(i => i.category)));
 
     const infFactor = 1 + (macroConfig.inflation / 100);
-    const mktFactor = 1 - (macroConfig.marketShock / 100);
-
     const today = new Date().toISOString().split('T')[0];
 
     const projectedIncome = incomeItems.reduce((acc, item) => {
         if (item.endDate && item.endDate < today) return acc;
-        const base = normalizeToMonthly(item.amount, item.frequency);
-        const isInvestment = item.category === 'Investments' || item.category === 'Dividends' || item.name.toLowerCase().includes('investment');
-        return acc + (isInvestment ? base * mktFactor : base);
+        return acc + getProjectedIncome(item, macroConfig.marketShock);
     }, 0);
+
+
 
     const projectedExpense = expenseItems.reduce((acc, item) => {
         if (item.endDate && item.endDate < today) return acc;

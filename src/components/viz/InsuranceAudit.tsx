@@ -35,9 +35,9 @@ export const InsuranceAudit: React.FC = () => {
 
     const getCoverageHealth = () => {
         const missing = essentialTypes.filter(t => !coveredTypes.has(t));
-        if (missing.length === 0) return { label: 'Fully Protected', color: 'text-emerald-500', icon: <CheckCircle2 size={16} /> };
-        if (missing.length <= 2) return { label: 'Partially Protected', color: 'text-amber-500', icon: <Info size={16} /> };
-        return { label: 'Unprotected', color: 'text-rose-500', icon: <AlertCircle size={16} /> };
+        if (missing.length === 0) return { label: t('inputs.netWorth.insurance.status.Fully Protected'), color: 'text-emerald-500', icon: <CheckCircle2 size={16} /> };
+        if (missing.length <= 2) return { label: t('inputs.netWorth.insurance.status.Partially Protected'), color: 'text-amber-500', icon: <Info size={16} /> };
+        return { label: t('inputs.netWorth.insurance.status.Unprotected'), color: 'text-rose-500', icon: <AlertCircle size={16} /> };
     };
 
     const health = getCoverageHealth();
@@ -50,8 +50,8 @@ export const InsuranceAudit: React.FC = () => {
                         <Shield size={20} />
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">Insurance Audit</h3>
-                        <p className="text-xs text-gray-500">Verify your financial safety net</p>
+                        <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">{t('inputs.netWorth.insurance.title')}</h3>
+                        <p className="text-xs text-gray-500">{t('inputs.netWorth.insurance.subtitle')}</p>
                     </div>
                 </div>
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 ${health.color}`}>
@@ -63,7 +63,7 @@ export const InsuranceAudit: React.FC = () => {
             <div className="apple-card p-6 bg-slate-50/50 dark:bg-white/5 border-dashed border-2 border-slate-200 dark:border-white/10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                        <label className="text-[11px] font-bold uppercase text-gray-400">Policy Name</label>
+                        <label className="text-[11px] font-bold uppercase text-gray-400">{t('inputs.netWorth.insurance.policyName')}</label>
                         <input 
                             value={name} onChange={e => setName(e.target.value)}
                             placeholder="e.g. Term Life"
@@ -71,17 +71,17 @@ export const InsuranceAudit: React.FC = () => {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[11px] font-bold uppercase text-gray-400">Type</label>
+                        <label className="text-[11px] font-bold uppercase text-gray-400">{t('inputs.netWorth.insurance.type')}</label>
                         <select 
                             value={type} onChange={e => setType(e.target.value as any)}
                             className="w-full bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm"
                         >
                             {essentialTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                            <option value="Other">Other</option>
+                            <option value="Other">{t('category.Custom')}</option>
                         </select>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[11px] font-bold uppercase text-gray-400">Premium ({symbol})</label>
+                        <label className="text-[11px] font-bold uppercase text-gray-400">{t('inputs.netWorth.insurance.premium')} ({symbol})</label>
                         <div className="flex gap-2">
                             <input 
                                 type="number" value={premium} onChange={e => setPremium(e.target.value)}
@@ -92,13 +92,13 @@ export const InsuranceAudit: React.FC = () => {
                                 value={frequency} onChange={e => setFrequency(e.target.value as any)}
                                 className="bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-white/10 rounded-xl px-2 py-2.5 text-xs font-bold"
                             >
-                                <option value="Monthly">Mo</option>
-                                <option value="Yearly">Yr</option>
+                                <option value="Monthly">{t('frequency.Monthly').slice(0, 2)}</option>
+                                <option value="Yearly">{t('frequency.Yearly').slice(0, 2)}</option>
                             </select>
                         </div>
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                        <label className="text-[11px] font-bold uppercase text-gray-400">Coverage Amount ({symbol})</label>
+                        <label className="text-[11px] font-bold uppercase text-gray-400">{t('inputs.netWorth.insurance.coverage')} ({symbol})</label>
                         <input 
                             type="number" value={coverage} onChange={e => setCoverage(e.target.value)}
                             placeholder="e.g. 500,000"
@@ -111,7 +111,7 @@ export const InsuranceAudit: React.FC = () => {
                             className="w-full apple-button-primary py-2.5 rounded-xl flex items-center justify-center gap-2"
                         >
                             <Plus size={18} />
-                            <span>Add Policy</span>
+                            <span>{t('inputs.netWorth.insurance.addPolicy')}</span>
                         </button>
                     </div>
                 </div>
@@ -120,7 +120,7 @@ export const InsuranceAudit: React.FC = () => {
             <div className="space-y-3">
                 {insuranceItems.length === 0 ? (
                     <div className="py-12 text-center text-gray-400 bg-slate-50/30 dark:bg-white/5 rounded-3xl border border-dashed border-slate-200 dark:border-white/10">
-                        <p className="text-sm font-medium">No policies added yet</p>
+                        <p className="text-sm font-medium">{t('inputs.netWorth.insurance.noPolicies')}</p>
                     </div>
                 ) : (
                     insuranceItems.map(item => (
@@ -138,13 +138,13 @@ export const InsuranceAudit: React.FC = () => {
                                     <h4 className="font-bold text-sm">{item.name}</h4>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 font-bold uppercase tracking-tighter text-gray-500">{item.type}</span>
-                                        <span className="text-[11px] text-gray-400 font-medium">Premium: {symbol}{isPrivacyMode ? '••••' : item.premium.toLocaleString()} / {item.frequency === 'Monthly' ? 'mo' : 'yr'}</span>
+                                        <span className="text-[11px] text-gray-400 font-medium">{t('inputs.netWorth.insurance.premium')}: {symbol}{isPrivacyMode ? '••••' : item.premium.toLocaleString()} / {item.frequency === 'Monthly' ? t('frequency.Monthly').slice(0, 2) : t('frequency.Yearly').slice(0, 2)}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-6">
                                 <div className="text-right">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase">Coverage</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase">{t('inputs.netWorth.insurance.coverage')}</p>
                                     <p className="text-sm font-black text-gray-900 dark:text-white">{symbol}{isPrivacyMode ? '••••••••' : item.coverage.toLocaleString()}</p>
                                 </div>
                                 <button 
@@ -159,5 +159,6 @@ export const InsuranceAudit: React.FC = () => {
                 )}
             </div>
         </div>
+
     );
 };

@@ -46,7 +46,7 @@ export const exportToCSV = (income: FinanceItem[], expenses: FinanceItem[], asse
  * Replaces the old regex-based approach which silently broke on commas inside
  * quoted strings (e.g. "Smith, John" would be split at the comma).
  */
-const splitCSVLine = (line: string): string[] => {
+export const splitCSVLine = (line: string): string[] => {
     const fields: string[] = [];
     let current = '';
     let inQuotes = false;

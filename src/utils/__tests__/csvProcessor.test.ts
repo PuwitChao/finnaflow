@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseCSV } from './csvProcessor';
+import { parseCSV } from '../csvProcessor';
+
+
 
 describe('parseCSV', () => {
     beforeEach(() => {

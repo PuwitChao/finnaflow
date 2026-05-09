@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useFinanceStore } from '../../../store/useFinanceStore';
+
 import { useI18n } from '../../../i18n';
 import { getCurrencySymbol } from '../../../utils/currencies';
-import { Plus, Trash2, Sparkles, ShieldCheck, ChevronDown, Copy, Check, X, MoveHorizontal } from 'lucide-react';
+import { Plus, Trash2, Sparkles, ShieldCheck, ChevronDown, Copy, Check, X, MoveHorizontal, Activity } from 'lucide-react';
+
 
 interface NetWorthInputProps {
     type: 'asset' | 'liability';
@@ -25,6 +27,8 @@ export const NetWorthInput: React.FC<NetWorthInputProps> = ({ type }) => {
     const [isCustomLabelMode, setIsCustomLabelMode] = useState(false);
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState<string>('Other');
+    const [isInvestment, setIsInvestment] = useState(false);
+
 
     const handleAdd = () => {
         const finalName = isCustomLabelMode ? (customName || t('inputs.labels.defaultItem')) : (name || t('inputs.labels.defaultItem'));
@@ -34,13 +38,17 @@ export const NetWorthInput: React.FC<NetWorthInputProps> = ({ type }) => {
             name: finalName,
             amount: parseFloat(amount),
             category,
+            isInvestment
         });
+
         showNotification(t('inputs.itemAdded'), 'success');
         setName('');
         setCustomName('');
         setIsCustomLabelMode(false);
         setAmount('');
+        setIsInvestment(false);
     };
+
 
     const toggleSelection = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -167,9 +175,15 @@ export const NetWorthInput: React.FC<NetWorthInputProps> = ({ type }) => {
                     <div className="relative">
                         <select 
                             value={category} 
-                            onChange={(e) => setCategory(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setCategory(val);
+                                if (val === 'Investments' || val === 'Crypto' || val === 'Stocks') setIsInvestment(true);
+                                else if (val === 'Cash' || val === 'Mortgage') setIsInvestment(false);
+                            }}
                             className="w-full apple-input appearance-none pr-10"
                         >
+
                             {type === 'asset' ? (
                                 <>
                                     <option value="Cash">{t('inputs.assets.common.Cash')}</option>
@@ -193,6 +207,20 @@ export const NetWorthInput: React.FC<NetWorthInputProps> = ({ type }) => {
                         <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
+                <div className="flex items-center gap-3 ml-1">
+
+                    <input 
+                        type="checkbox" 
+                        id={`${type}-is-investment`}
+                        checked={isInvestment} 
+                        onChange={(e) => setIsInvestment(e.target.checked)}
+                        className="w-5 h-5 rounded-lg border-none bg-gray-100 dark:bg-white/10 text-blue-500 focus:ring-0 cursor-pointer"
+                    />
+                    <label htmlFor={`${type}-is-investment`} className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 cursor-pointer select-none">
+                        {t('inputs.labels.isInvestment') || 'Mark as Investment (Affected by Market Shock)'}
+                    </label>
+                </div>
+
                 <button
                     onClick={handleAdd}
                     className={`apple-button-primary w-full py-4 mt-2 !bg-opacity-90 ${type === 'asset' ? 'hover:!bg-emerald-600' : 'hover:!bg-purple-700'}`}
@@ -229,7 +257,14 @@ export const NetWorthInput: React.FC<NetWorthInputProps> = ({ type }) => {
                                         }`}>
                                             {item.category}
                                         </span>
+                                        {item.isInvestment && (
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full font-black uppercase bg-blue-500/10 text-blue-500 border border-blue-500/20 flex items-center gap-1">
+                                                <Activity size={10} />
+                                                {t('inputs.investment') || 'Investment'}
+                                            </span>
+                                        )}
                                     </div>
+
                                 </div>
                             </div>
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

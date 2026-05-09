@@ -1,5 +1,7 @@
 import React from 'react';
-import Plot from 'react-plotly.js';
+import createPlotlyComponent from 'react-plotly.js/factory';
+import Plotly from '../../utils/plotly-custom';
+const Plot = createPlotlyComponent(Plotly);
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { generateSankeyConfig } from '../../utils/financeEngine';

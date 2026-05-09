@@ -1,19 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFinanceStore, FinanceItem } from './store/useFinanceStore';
 import { useI18n } from './i18n';
-import { APP_VERSION } from './constants/version';
-import { scaleTemplateAmount, CURRENCY_SCALE } from './utils/currencies';
+// import { APP_VERSION } from './constants/version'; // Removed to avoid conflict with local declaration from package.json
+
+import { scaleTemplateAmount, CURRENCY_SCALE, getCurrencySymbol } from './utils/currencies';
+
 import { SankeyChart } from './components/viz/SankeyChart';
 import { ProjectorPanel } from './components/viz/ProjectorPanel';
 import { AppGuide } from './components/layout/modals/AppGuide';
 import { WikiPage } from './components/layout/modals/WikiPage';
 import { InsuranceAudit } from './components/viz/InsuranceAudit';
-import { exportToCSV, parseCSV } from './utils/csvProcessor';
-import { RefreshCw } from 'lucide-react';
+import { exportToCSV, parseCSV, splitCSVLine } from './utils/csvProcessor';
+import { generatePDFReport } from './utils/reportGenerator';
+import { RefreshCw, FileDown } from 'lucide-react';
 
-// App version — kept in sync with package.json
 import pkgJson from '../package.json';
 const APP_VERSION: string = pkgJson.version;
+
+import { useFinanceIO } from './hooks/useFinanceIO';
+import { useTemplates } from './hooks/useTemplates';
+
 
 // New Modular Components
 import { FinanceInput } from './components/finance/inputs/FinanceInput';
@@ -25,6 +31,7 @@ import { Footer } from './components/layout/navigation/Footer';
 import { NetWorthTab } from './components/finance/net-worth/NetWorthTab';
 import { BatchPasteModal } from './components/finance/modals/BatchPasteModal';
 import { UserGuideView } from './components/layout/modals/UserGuideView';
+import { ModalProvider } from './components/layout/modals/ModalProvider';
 
 function App() {
     const store = useFinanceStore();
@@ -35,12 +42,27 @@ function App() {
     const [showLangMenu, setShowLangMenu] = useState(false);
     const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
     const [showTemplateMenu, setShowTemplateMenu] = useState(false);
-    const [view, setView] = useState<'dashboard' | 'wiki' | 'networth' | 'guide'>('dashboard');
+    const [view, setView] = useState<'dashboard' | 'networth'>('dashboard');
     const [netWorthTab, setNetWorthTab] = useState<'composition' | 'insurance'>('composition');
-    const [showBatchPaste, setShowBatchPaste] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const csvInputRef = useRef<HTMLInputElement>(null);
     const headerRef = useRef<HTMLDivElement>(null);
+
+    const { 
+        fileInputRef, 
+        csvInputRef, 
+        handleSave, 
+        handleLoad, 
+        handleCSVExport, 
+        handleCSVImport, 
+        handleGenerateReport 
+    } = useFinanceIO();
+
+    const { handleLoadTemplate: originalHandleLoadTemplate } = useTemplates();
+
+    const handleLoadTemplate = (type: 'beginner' | 'standard') => {
+        originalHandleLoadTemplate(type);
+        setShowTemplateMenu(false);
+    };
+
 
     // Close dropdown menus when clicking outside
     useEffect(() => {
@@ -63,142 +85,20 @@ function App() {
         }
     }, [darkMode]);
 
-    if (!hasSetPreferences) {
-        return <OnboardingOverlay />;
-    }
-
     const handleRecalculate = () => {
         setIsRefreshing(true);
         setTimeout(() => setIsRefreshing(false), 800);
     };
 
+
     const handleNewSession = () => {
-        const confirmMsg = language === 'th' ? 'คุณแน่ใจหรือไม่? ข้อมูลทั้งหมดจะถูกลบ' : 'Are you sure? This will delete all your current financial data.';
+        const confirmMsg = t('common.confirmNewSession');
         if (window.confirm(confirmMsg)) {
             clearSession();
             store.showNotification(t('header.newSession') || 'Session cleared', 'info');
         }
     };
 
-    const handleSave = () => {
-        if (isPrivacyMode) {
-            store.showNotification(t('file.privacyModeBlocked'), 'error');
-            return;
-        }
-        const data = { version: APP_VERSION, incomeItems, expenseItems, isUnlocked, darkMode, language };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `finnaflow-session-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    const handleLoad = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target?.result as string);
-                if (data.incomeItems && data.expenseItems) {
-                    clearSession();
-                    data.incomeItems.forEach((item: FinanceItem) => store.addIncome(item));
-                    data.expenseItems.forEach((item: FinanceItem) => store.addExpense(item));
-                    if (data.assetItems) data.assetItems.forEach((item: any) => store.addAsset(item));
-                    if (data.liabilityItems) data.liabilityItems.forEach((item: any) => store.addLiability(item));
-                    store.showNotification(t('file.importSuccess'), 'success');
-                }
-            } catch { store.showNotification(t('file.importError'), 'error'); }
-        };
-        reader.readAsText(file);
-        event.target.value = ''; // Reset so the same file can be re-imported
-    };
-
-    const handleCSVExport = () => {
-        if (isPrivacyMode) {
-            store.showNotification(t('file.privacyModeBlocked'), 'error');
-            return;
-        }
-        const csv = exportToCSV(incomeItems, expenseItems, assetItems, liabilityItems);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `finnaflow-data-${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    const handleCSVImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const { income, expenses, assets, liabilities } = parseCSV(e.target?.result as string);
-                if (income.length > 0 || expenses.length > 0 || assets.length > 0 || liabilities.length > 0) {
-                    clearSession();
-                    income.forEach(item => store.addIncome(item));
-                    expenses.forEach(item => store.addExpense(item));
-                    assets.forEach(item => store.addAsset(item));
-                    liabilities.forEach(item => store.addLiability(item));
-                    store.showNotification(t('file.importSuccess'), 'success');
-                } else {
-                    store.showNotification(t('file.csvError'), 'error');
-                }
-            } catch { store.showNotification(t('file.csvError'), 'error'); }
-        };
-        reader.readAsText(file);
-        event.target.value = '';
-    };
-
-    const handleLoadTemplate = (type: 'beginner' | 'standard') => {
-        if (store.currency !== 'THB' && !window.confirm(
-            `${t('file.templateCurrencyNote')} ${store.currency}. ${language === 'th' ? 'ดำเนินการต่อ?' : 'Continue?'}`
-        )) return;
-
-        const scaleAmount = (thbAmount: number): number => scaleTemplateAmount(thbAmount, store.currency);
-
-        let income: FinanceItem[];
-        let expenses: FinanceItem[];
-        let assets: any[] = [];
-        let liabilities: any[] = [];
-
-        if (type === 'beginner') {
-            income = [{ id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: scaleAmount(15000), frequency: 'Monthly', category: 'Needs' }];
-            expenses = [
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Rent'), amount: scaleAmount(4500), frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Groceries'), amount: scaleAmount(3500), frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Fun'), amount: scaleAmount(1500), frequency: 'Monthly', category: 'Wants' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.emergencyFund'), amount: scaleAmount(1000), frequency: 'Monthly', category: 'Savings' }
-            ];
-            assets = [{ id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: scaleAmount(25000), category: 'Cash' }];
-        } else {
-            income = [
-                { id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: scaleAmount(30000), frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.income.common.Dividends'), amount: scaleAmount(2500), frequency: 'Monthly', category: 'Investments' }
-            ];
-            expenses = [
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Rent'), amount: scaleAmount(8000), frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Groceries'), amount: scaleAmount(5000), frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Transport'), amount: scaleAmount(2000), frequency: 'Monthly', category: 'Needs' },
-                { id: crypto.randomUUID(), name: t('inputs.expense.common.Shopping'), amount: scaleAmount(3000), frequency: 'Monthly', category: 'Wants' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.etfPortfolio'), amount: scaleAmount(4000), frequency: 'Monthly', category: 'Investments' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.retirementFund'), amount: scaleAmount(2500), frequency: 'Monthly', category: 'Savings' },
-                { id: crypto.randomUUID(), name: t('file.templateItems.creditCardPayoff'), amount: scaleAmount(1500), frequency: 'Monthly', category: 'Debt' }
-            ];
-            assets = [
-                { id: crypto.randomUUID(), name: t('inputs.assets.common.Cash'), amount: scaleAmount(50000), category: 'Cash' },
-                { id: crypto.randomUUID(), name: t('inputs.assets.common.Investments'), amount: scaleAmount(120000), category: 'Stocks' }
-            ];
-            liabilities = [{ id: crypto.randomUUID(), name: t('inputs.liabilities.common.CarLoan'), amount: scaleAmount(250000), category: 'Car Loan' }];
-        }
-        store.loadExampleTemplate({ income, expenses, assets, liabilities });
-        store.showNotification(t('file.templateSuccess'), 'success');
-        setShowTemplateMenu(false);
-    };
 
     return (
         <div className="min-h-screen p-4 sm:p-6 md:p-14 transition-all duration-500 selection:bg-[#007AFF]/20 selection:text-[#007AFF]">
@@ -209,8 +109,13 @@ function App() {
                     onNewSession={handleNewSession}
                     onCSVExport={handleCSVExport}
                     onCSVImportClick={() => csvInputRef.current?.click()}
-                    onBatchPasteClick={() => setShowBatchPaste(true)}
-                    onViewToggle={(v) => setView(v)}
+                    onBatchPasteClick={() => store.openModal('batchPaste')}
+                    onGenerateReport={handleGenerateReport}
+                    onViewToggle={(v) => {
+                        if (v === 'wiki') store.openModal('wiki');
+                        else if (v === 'guide') store.openModal('guide');
+                        else setView(v as 'dashboard' | 'networth');
+                    }}
                     onLoadTemplate={handleLoadTemplate}
                     showLangMenu={showLangMenu}
                     setShowLangMenu={setShowLangMenu}
@@ -225,17 +130,14 @@ function App() {
             <input ref={fileInputRef} type="file" accept=".json" onChange={handleLoad} className="hidden" />
             <input ref={csvInputRef} type="file" accept=".csv" onChange={handleCSVImport} className="hidden" />
 
-            {view === 'wiki' ? (
-                <WikiPage onBack={() => setView('dashboard')} onNavigate={(v) => setView(v)} />
-            ) : view === 'guide' ? (
-                <UserGuideView onBack={() => setView('dashboard')} />
-            ) : view === 'networth' ? (
-                <main className="max-w-7xl mx-auto pb-16 sm:pb-32">
+            {view === 'networth' ? (
+                <main key="networth" className="max-w-7xl mx-auto pb-16 sm:pb-32 animate-in fade-in zoom-in-98 duration-700">
                     <NetWorthTab />
                 </main>
             ) : (
-                <main className="max-w-7xl mx-auto space-y-12 sm:space-y-24 pb-16 sm:pb-32">
+                <main key="dashboard" className="max-w-7xl mx-auto space-y-12 sm:space-y-24 pb-16 sm:pb-32 animate-in fade-in zoom-in-98 duration-700">
                     <AppGuide />
+
                     <article className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
                         <FinanceInput type="income" />
                         <FinanceInput type="expense" />
@@ -254,8 +156,8 @@ function App() {
                         <NetWorthCard />
 
                         <div className="flex gap-4 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl mb-8 w-fit">
-                            <button onClick={() => setNetWorthTab('composition')} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${netWorthTab === 'composition' ? 'bg-white dark:bg-white/10 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Net Worth</button>
-                            <button onClick={() => setNetWorthTab('insurance')} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${netWorthTab === 'insurance' ? 'bg-white dark:bg-white/10 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>Insurance Audit</button>
+                            <button onClick={() => setNetWorthTab('composition')} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${netWorthTab === 'composition' ? 'bg-white dark:bg-white/10 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>{t('inputs.netWorth.tabs.networth')}</button>
+                            <button onClick={() => setNetWorthTab('insurance')} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${netWorthTab === 'insurance' ? 'bg-white dark:bg-white/10 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>{t('inputs.netWorth.tabs.insurance')}</button>
                         </div>
 
                         {netWorthTab === 'composition' ? (
@@ -282,7 +184,7 @@ function App() {
                                 {isRefreshing ? t('chart.recalculating') : t('chart.recalculate')}
                             </button>
                         </div>
-                        <div className={`transition-all duration-700 relative z-10 ${isRefreshing ? 'opacity-20 blur-2xl scale-[0.98]' : 'opacity-100 blur-0 scale-100'}`}>
+                        <div id="sankey-report-area" className={`transition-all duration-700 relative z-10 ${isRefreshing ? 'opacity-20 blur-2xl scale-[0.98]' : 'opacity-100 blur-0 scale-100'}`}>
                             <div className="min-h-[350px] sm:min-h-[500px] md:min-h-[600px] relative"><SankeyChart /></div>
                         </div>
                     </section>
@@ -300,7 +202,7 @@ function App() {
                 </div>
             )}
             <ProjectorPanel />
-            {showBatchPaste && <BatchPasteModal onClose={() => setShowBatchPaste(false)} />}
+            <ModalProvider />
         </div>
     );
 }

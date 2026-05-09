@@ -5,17 +5,15 @@ import { getCurrencySymbol } from '../../../utils/currencies';
 import { NetWorthGroup } from './NetWorthGroup';
 import { NetWorthSummary } from './NetWorthSummary';
 import { AssetDistributionChart } from '../../viz/AssetDistributionChart';
-import { FireTrackerOverlay } from '../modals/FireTrackerOverlay';
+import { TrendChart } from '../../viz/TrendChart';
 import { TrendingUp, TrendingDown, Target, Info } from 'lucide-react';
 
 export const NetWorthTab: React.FC = () => {
     const { t } = useI18n();
-    const [isFireTrackerOpen, setIsFireTrackerOpen] = useState(false);
+    const { openModal } = useFinanceStore();
 
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-5 duration-700 pb-20">
-            {isFireTrackerOpen && <FireTrackerOverlay onClose={() => setIsFireTrackerOpen(false)} />}
-            {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-1">
@@ -31,7 +29,7 @@ export const NetWorthTab: React.FC = () => {
                 
                 <div className="flex items-center gap-4 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/20 dark:border-white/5">
                     <button 
-                        onClick={() => setIsFireTrackerOpen(true)}
+                        onClick={() => openModal('fireTracker')}
                         className="apple-button-secondary px-6 py-3 text-xs flex items-center gap-2"
                     >
                         <Target size={14} strokeWidth={2.5} />
@@ -44,9 +42,14 @@ export const NetWorthTab: React.FC = () => {
             <NetWorthSummary />
 
             {/* Visual Insights Section */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-6">
-                <div className="md:col-span-12">
-                     <AssetDistributionChart />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6">
+                <div id="trend-report-area" className="apple-card p-8 sm:p-12 space-y-6">
+                    <h3 className="text-lg font-bold">{t('inputs.netWorth.wealthTrend') || 'Wealth Trend'}</h3>
+                    <TrendChart />
+                </div>
+                <div className="apple-card p-8 sm:p-12 space-y-6">
+                    <h3 className="text-lg font-bold">{t('inputs.netWorth.assetComposition') || 'Asset Composition'}</h3>
+                    <AssetDistributionChart />
                 </div>
             </div>
 

@@ -13,7 +13,9 @@ export interface FinanceItem {
     description?: string;
     startDate?: string;
     endDate?: string;
+    isInvestment?: boolean;
 }
+
 
 export interface NetWorthItem {
     id: string;
@@ -21,7 +23,9 @@ export interface NetWorthItem {
     amount: number;
     category: string;
     description?: string;
+    isInvestment?: boolean;
 }
+
 
 export interface InsuranceItem {
     id: string;
@@ -42,6 +46,12 @@ export interface FireScenario {
     savedAt: string;
 }
 
+export type ModalType = 'batchPaste' | 'wiki' | 'guide' | 'csvMapper' | 'fireTracker' | 'onboarding' | 'lang' | 'currency' | 'template';
+
+export type UpdatableFinanceItem = Partial<Omit<FinanceItem, 'id'>>;
+export type UpdatableNetWorthItem = Partial<Omit<NetWorthItem, 'id'>>;
+export type UpdatableInsuranceItem = Partial<Omit<InsuranceItem, 'id'>>;
+
 interface FinanceState {
     incomeItems: FinanceItem[];
     expenseItems: FinanceItem[];
@@ -49,6 +59,8 @@ interface FinanceState {
     liabilityItems: NetWorthItem[];
     insuranceItems: InsuranceItem[];
     fireScenarios: FireScenario[];
+    activeModal: ModalType | null;
+    csvDataToMap: { headers: string[], rows: string[][] } | null;
     isUnlocked: boolean;
     darkMode: boolean;
     isProjectionMode: boolean;
@@ -56,8 +68,16 @@ interface FinanceState {
     currency: string;
     categoryMultipliers: Record<string, number>;
     macroConfig: { inflation: number; marketShock: number };
+    history: { date: string, netWorth: number }[];
     hasSetPreferences: boolean;
     lastUpdated: string | null;
+    _notificationTimeout: any | null;
+    _snapshotTimeout: any | null;
+    openModal: (type: ModalType) => void;
+
+    closeModal: () => void;
+    setCSVDataToMap: (data: { headers: string[], rows: string[][] } | null) => void;
+    captureSnapshot: () => void;
     togglePrivacyMode: () => void;
     setPreferencesSet: (val: boolean) => void;
     duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability' | 'insurance') => void;
@@ -71,7 +91,7 @@ interface FinanceState {
     removeLiability: (id: string) => void;
     addInsurance: (item: InsuranceItem) => void;
     removeInsurance: (id: string) => void;
-    updateItems: (ids: string[], type: 'income' | 'expense' | 'asset' | 'liability', updates: any) => void;
+    updateItems: (ids: string[], type: 'income' | 'expense' | 'asset' | 'liability', updates: UpdatableFinanceItem | UpdatableNetWorthItem) => void;
     removeItems: (ids: string[], type: 'income' | 'expense' | 'asset' | 'liability') => void;
     setUnlocked: (unlocked: boolean) => void;
     setCurrency: (currency: string) => void;
@@ -89,6 +109,7 @@ interface FinanceState {
     getTotalLiabilities: () => number;
     loadExampleTemplate: (items: { income: FinanceItem[], expenses: FinanceItem[], assets?: NetWorthItem[], liabilities?: NetWorthItem[], insurance?: InsuranceItem[] }) => void;
 }
+
 
 const safeStorage = createJSONStorage(() => ({
     getItem: (name: string): string | null => {
@@ -127,10 +148,48 @@ export const useFinanceStore = create<FinanceState>()(
             hasSetPreferences: false,
             lastUpdated: null,
             notification: null,
-            addIncome: (item: FinanceItem) => set((state: FinanceState) => ({
-                incomeItems: [...state.incomeItems, item],
-                lastUpdated: new Date().toISOString()
-            })),
+            _notificationTimeout: null,
+            _snapshotTimeout: null,
+            activeModal: null,
+            csvDataToMap: null,
+            history: [],
+            openModal: (type: ModalType) => set({ activeModal: type }),
+            closeModal: () => set({ activeModal: null }),
+            setCSVDataToMap: (data) => set({ csvDataToMap: data }),
+            captureSnapshot: () => {
+                const existingTimeout = get()._snapshotTimeout;
+                if (existingTimeout) clearTimeout(existingTimeout);
+
+                const timeoutId = setTimeout(() => {
+                    set((state: FinanceState) => {
+                        const totalAssets = state.assetItems.reduce((acc, i) => acc + i.amount, 0);
+                        const totalLiabilities = state.liabilityItems.reduce((acc, i) => acc + i.amount, 0);
+                        const netWorth = totalAssets - totalLiabilities;
+                        const today = new Date().toISOString().split('T')[0];
+                        
+                        const filteredHistory = state.history.filter(h => h.date !== today);
+                        const lastSnapshot = state.history[state.history.length - 1];
+                        
+                        if (lastSnapshot && lastSnapshot.date === today && lastSnapshot.netWorth === netWorth) {
+                            return { _snapshotTimeout: null };
+                        }
+
+                        const newHistory = [...filteredHistory, { date: today, netWorth }];
+                        return { history: newHistory.slice(-365), _snapshotTimeout: null };
+                    });
+                }, 1000); // 1 second debounce
+
+                set({ _snapshotTimeout: timeoutId });
+            },
+
+
+            addIncome: (item: FinanceItem) => set((state: FinanceState) => {
+                const newState = {
+                    incomeItems: [...state.incomeItems, item],
+                    lastUpdated: new Date().toISOString()
+                };
+                return newState;
+            }),
             removeIncome: (id: string) => set((state: FinanceState) => ({
                 incomeItems: state.incomeItems.filter(i => i.id !== id),
                 lastUpdated: new Date().toISOString()
@@ -143,22 +202,34 @@ export const useFinanceStore = create<FinanceState>()(
                 expenseItems: state.expenseItems.filter(i => i.id !== id),
                 lastUpdated: new Date().toISOString()
             })),
-            addAsset: (item: NetWorthItem) => set((state: FinanceState) => ({
-                assetItems: [...state.assetItems, item],
-                lastUpdated: new Date().toISOString()
-            })),
-            removeAsset: (id: string) => set((state: FinanceState) => ({
-                assetItems: state.assetItems.filter(i => i.id !== id),
-                lastUpdated: new Date().toISOString()
-            })),
-            addLiability: (item: NetWorthItem) => set((state: FinanceState) => ({
-                liabilityItems: [...state.liabilityItems, item],
-                lastUpdated: new Date().toISOString()
-            })),
-            removeLiability: (id: string) => set((state: FinanceState) => ({
-                liabilityItems: state.liabilityItems.filter(i => i.id !== id),
-                lastUpdated: new Date().toISOString()
-            })),
+            addAsset: (item: NetWorthItem) => {
+                set((state: FinanceState) => ({
+                    assetItems: [...state.assetItems, item],
+                    lastUpdated: new Date().toISOString()
+                }));
+                get().captureSnapshot();
+            },
+            removeAsset: (id: string) => {
+                set((state: FinanceState) => ({
+                    assetItems: state.assetItems.filter(i => i.id !== id),
+                    lastUpdated: new Date().toISOString()
+                }));
+                get().captureSnapshot();
+            },
+            addLiability: (item: NetWorthItem) => {
+                set((state: FinanceState) => ({
+                    liabilityItems: [...state.liabilityItems, item],
+                    lastUpdated: new Date().toISOString()
+                }));
+                get().captureSnapshot();
+            },
+            removeLiability: (id: string) => {
+                set((state: FinanceState) => ({
+                    liabilityItems: state.liabilityItems.filter(i => i.id !== id),
+                    lastUpdated: new Date().toISOString()
+                }));
+                get().captureSnapshot();
+            },
             addInsurance: (item: InsuranceItem) => set((state: FinanceState) => ({
                 insuranceItems: [...state.insuranceItems, item],
                 lastUpdated: new Date().toISOString()
@@ -167,24 +238,30 @@ export const useFinanceStore = create<FinanceState>()(
                 insuranceItems: state.insuranceItems.filter(i => i.id !== id),
                 lastUpdated: new Date().toISOString()
             })),
-            updateItems: (ids: string[], type, updates) => set((state: FinanceState) => {
-                const key = type === 'income' ? 'incomeItems' :
-                            type === 'expense' ? 'expenseItems' :
-                            type === 'asset' ? 'assetItems' : 'liabilityItems';
-                return {
-                    [key]: state[key].map((item: any) => ids.includes(item.id) ? { ...item, ...updates } : item),
-                    lastUpdated: new Date().toISOString()
-                };
-            }),
-            removeItems: (ids: string[], type) => set((state: FinanceState) => {
-                const key = type === 'income' ? 'incomeItems' :
-                            type === 'expense' ? 'expenseItems' :
-                            type === 'asset' ? 'assetItems' : 'liabilityItems';
-                return {
-                    [key]: state[key].filter((item: any) => !ids.includes(item.id)),
-                    lastUpdated: new Date().toISOString()
-                };
-            }),
+            updateItems: (ids: string[], type, updates) => {
+                set((state: FinanceState) => {
+                    const key = type === 'income' ? 'incomeItems' :
+                                type === 'expense' ? 'expenseItems' :
+                                type === 'asset' ? 'assetItems' : 'liabilityItems';
+                    return {
+                        [key]: state[key].map((item: any) => ids.includes(item.id) ? { ...item, ...updates } : item),
+                        lastUpdated: new Date().toISOString()
+                    };
+                });
+                if (type === 'asset' || type === 'liability') get().captureSnapshot();
+            },
+            removeItems: (ids: string[], type) => {
+                set((state: FinanceState) => {
+                    const key = type === 'income' ? 'incomeItems' :
+                                type === 'expense' ? 'expenseItems' :
+                                type === 'asset' ? 'assetItems' : 'liabilityItems';
+                    return {
+                        [key]: state[key].filter((item: any) => !ids.includes(item.id)),
+                        lastUpdated: new Date().toISOString()
+                    };
+                });
+                if (type === 'asset' || type === 'liability') get().captureSnapshot();
+            },
             setUnlocked: (unlocked: boolean) => set({ isUnlocked: unlocked }),
             setCurrency: (currency: string) => set({ currency }),
             setPreferencesSet: (val: boolean) => set({ hasSetPreferences: val }),
@@ -233,9 +310,14 @@ export const useFinanceStore = create<FinanceState>()(
                 fireScenarios: state.fireScenarios.filter(s => s.id !== id)
             })),
             showNotification: (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+                const existingTimeout = get()._notificationTimeout;
+                if (existingTimeout) clearTimeout(existingTimeout);
+
                 set({ notification: { message, type } });
-                setTimeout(() => set({ notification: null }), 3000);
+                const timeoutId = setTimeout(() => set({ notification: null, _notificationTimeout: null }), 3000);
+                set({ _notificationTimeout: timeoutId });
             },
+
             getTotalAssets: () => {
                 return (get().assetItems || []).reduce((acc, item) => acc + item.amount, 0);
             },

@@ -31,4 +31,19 @@ export default defineConfig({
             }
         })
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-plotly': ['react-plotly.js', 'plotly.js'],
+                    'vendor-recharts': ['recharts'],
+                    'vendor-utils': ['lucide-react', 'clsx', 'zustand'],
+                    'vendor-pdf': ['jspdf', 'html2canvas'],
+                }
+
+            }
+        },
+        chunkSizeWarningLimit: 1000,
+    }
 });
+
