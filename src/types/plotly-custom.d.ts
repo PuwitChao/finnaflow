@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module 'plotly.js/lib/core' {
     const Plotly: any;
     export default Plotly;

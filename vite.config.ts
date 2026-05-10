@@ -34,13 +34,20 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    'vendor-plotly': ['react-plotly.js', 'plotly.js'],
-                    'vendor-recharts': ['recharts'],
-                    'vendor-utils': ['lucide-react', 'clsx', 'zustand'],
-                    'vendor-pdf': ['jspdf', 'html2canvas'],
+                manualChunks(id: string) {
+                    if (id.includes('/node_modules/plotly') || id.includes('/node_modules/react-plotly')) {
+                        return 'vendor-plotly';
+                    }
+                    if (id.includes('/node_modules/recharts')) {
+                        return 'vendor-recharts';
+                    }
+                    if (id.includes('/node_modules/jspdf') || id.includes('/node_modules/html2canvas')) {
+                        return 'vendor-pdf';
+                    }
+                    if (id.includes('/node_modules/lucide-react') || id.includes('/node_modules/zustand')) {
+                        return 'vendor-utils';
+                    }
                 }
-
             }
         },
         chunkSizeWarningLimit: 1000,

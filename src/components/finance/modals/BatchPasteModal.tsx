@@ -29,14 +29,13 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
     }, [inputText]);
 
     useEffect(() => {
-        if (!inputText.trim()) {
-            setParsedData([]);
-            setSelectedItems(new Set());
-            setEditedCategories({});
-            return;
-        }
-        // Debounce: wait 400ms after last keystroke before running parser
         const timer = setTimeout(() => {
+            if (!inputText.trim()) {
+                setParsedData([]);
+                setSelectedItems(new Set());
+                setEditedCategories({});
+                return;
+            }
             const results = parseStatement(inputText);
             setParsedData(results);
             setSelectedItems(new Set(results.map((_, i) => i)));
@@ -77,7 +76,7 @@ export const BatchPasteModal: React.FC<BatchPasteModalProps> = ({ onClose }) => 
         const incomeIds: string[] = [];
         const expenseIds: string[] = [];
 
-        itemsToImport.forEach((item, idx) => {
+        itemsToImport.forEach((item) => {
             const originalIdx = parsedData.indexOf(item);
             const finalCategory = editedCategories[originalIdx] ?? item.category;
             const newItem: FinanceItem = {

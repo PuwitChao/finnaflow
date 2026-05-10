@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useFinanceStore, FinanceItem } from '../store/useFinanceStore';
+import { useFinanceStore } from '../store/useFinanceStore';
 import { useI18n } from '../i18n';
 import { exportToCSV, splitCSVLine } from '../utils/csvProcessor';
 import { getCurrencySymbol } from '../utils/currencies';

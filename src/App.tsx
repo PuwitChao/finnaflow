@@ -1,42 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useFinanceStore, FinanceItem } from './store/useFinanceStore';
+import { useFinanceStore } from './store/useFinanceStore';
 import { useI18n } from './i18n';
-// import { APP_VERSION } from './constants/version'; // Removed to avoid conflict with local declaration from package.json
-
-import { scaleTemplateAmount, CURRENCY_SCALE, getCurrencySymbol } from './utils/currencies';
 
 import { SankeyChart } from './components/viz/SankeyChart';
 import { ProjectorPanel } from './components/viz/ProjectorPanel';
 import { AppGuide } from './components/layout/modals/AppGuide';
-import { WikiPage } from './components/layout/modals/WikiPage';
 import { InsuranceAudit } from './components/viz/InsuranceAudit';
-import { exportToCSV, parseCSV, splitCSVLine } from './utils/csvProcessor';
-import { generatePDFReport } from './utils/reportGenerator';
-import { RefreshCw, FileDown } from 'lucide-react';
-
-import pkgJson from '../package.json';
-const APP_VERSION: string = pkgJson.version;
+import { RefreshCw } from 'lucide-react';
 
 import { useFinanceIO } from './hooks/useFinanceIO';
 import { useTemplates } from './hooks/useTemplates';
 
-
-// New Modular Components
 import { FinanceInput } from './components/finance/inputs/FinanceInput';
 import { NetWorthInput } from './components/finance/inputs/NetWorthInput';
 import { NetWorthCard } from './components/finance/net-worth/NetWorthCard';
-import { OnboardingOverlay } from './components/layout/modals/OnboardingOverlay';
 import { Header } from './components/layout/navigation/Header';
 import { Footer } from './components/layout/navigation/Footer';
 import { NetWorthTab } from './components/finance/net-worth/NetWorthTab';
-import { BatchPasteModal } from './components/finance/modals/BatchPasteModal';
-import { UserGuideView } from './components/layout/modals/UserGuideView';
 import { ModalProvider } from './components/layout/modals/ModalProvider';
 
 function App() {
     const store = useFinanceStore();
-    const { incomeItems, expenseItems, assetItems, liabilityItems, isUnlocked, darkMode, clearSession, hasSetPreferences, isPrivacyMode } = store;
-    const { t, language } = useI18n();
+    const { darkMode, clearSession } = store;
+    const { t } = useI18n();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showLangMenu, setShowLangMenu] = useState(false);

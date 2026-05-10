@@ -2,11 +2,9 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 import PlotlyCustom from '../../utils/plotly-custom';
 const Plot = createPlotlyComponent(PlotlyCustom);
 import { useFinanceStore } from '../../store/useFinanceStore';
-import { useI18n } from '../../i18n';
 
 export const AssetDistributionChart: React.FC = () => {
     const { assetItems, darkMode, isPrivacyMode } = useFinanceStore();
-    const { t } = useI18n();
 
     // Group assets by category
     const categoryTotals: Record<string, number> = {};

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFinanceStore, InsuranceItem } from '../../store/useFinanceStore';
+import { useFinanceStore, InsuranceItem, Frequency } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { Shield, Plus, Trash2, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { getCurrencySymbol } from '../../utils/currencies';
@@ -73,7 +73,7 @@ export const InsuranceAudit: React.FC = () => {
                     <div className="space-y-2">
                         <label className="text-[11px] font-bold uppercase text-gray-400">{t('inputs.netWorth.insurance.type')}</label>
                         <select 
-                            value={type} onChange={e => setType(e.target.value as any)}
+                            value={type} onChange={e => setType(e.target.value as InsuranceItem['type'])}
                             className="w-full bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm"
                         >
                             {essentialTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -89,7 +89,7 @@ export const InsuranceAudit: React.FC = () => {
                                 className="w-full bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm"
                             />
                             <select 
-                                value={frequency} onChange={e => setFrequency(e.target.value as any)}
+                                value={frequency} onChange={e => setFrequency(e.target.value as Frequency)}
                                 className="bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-white/10 rounded-xl px-2 py-2.5 text-xs font-bold"
                             >
                                 <option value="Monthly">{t('frequency.Monthly').slice(0, 2)}</option>

@@ -1,4 +1,4 @@
-import { useFinanceStore, FinanceItem } from '../store/useFinanceStore';
+import { useFinanceStore, FinanceItem, NetWorthItem } from '../store/useFinanceStore';
 import { useI18n } from '../i18n';
 import { scaleTemplateAmount } from '../utils/currencies';
 
@@ -15,8 +15,8 @@ export const useTemplates = () => {
 
         let income: FinanceItem[];
         let expenses: FinanceItem[];
-        let assets: any[] = [];
-        let liabilities: any[] = [];
+        let assets: NetWorthItem[];
+        let liabilities: NetWorthItem[] = [];
 
         if (type === 'beginner') {
             income = [{ id: crypto.randomUUID(), name: t('inputs.income.common.Salary'), amount: scaleAmount(15000), frequency: 'Monthly', category: 'Needs' }];

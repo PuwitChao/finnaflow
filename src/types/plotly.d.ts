@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module 'react-plotly.js/factory' {
-    import { PlotlyEditorProps } from 'react-plotly.js';
     import { ComponentType } from 'react';
     export default function createPlotlyComponent(plotly: any): ComponentType<any>;
 }

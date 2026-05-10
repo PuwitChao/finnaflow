@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFinanceStore, NetWorthItem as INetWorthItem } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
 import { getCurrencySymbol } from '../../../utils/currencies';
-import { Trash2, Copy, Edit2, Check, X } from 'lucide-react';
+import { Trash2, Copy } from 'lucide-react';
 
 interface NetWorthItemProps {
     item: INetWorthItem;
@@ -13,8 +13,6 @@ export const NetWorthItem: React.FC<NetWorthItemProps> = ({ item, type }) => {
     const { removeAsset, removeLiability, duplicateItem, currency, isPrivacyMode, showNotification } = useFinanceStore();
     const { t } = useI18n();
     const sym = getCurrencySymbol(currency);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editAmount, setEditAmount] = useState(item.amount.toString());
 
     const handleRemove = () => {
         if (type === 'asset') removeAsset(item.id);
