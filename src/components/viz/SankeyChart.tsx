@@ -98,7 +98,7 @@ export const SankeyChart: React.FC = () => {
                     }
                 }}
                 config={{ displayModeBar: false }}
-                onClick={(data: any) => {
+                onClick={(data: { points: Array<{ pointNumber: number }> }) => {
                     const point = data?.points?.[0];
                     if (point && typeof point.pointNumber === 'number') {
                         setSelectedNodeIndex(point.pointNumber);

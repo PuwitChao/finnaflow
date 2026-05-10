@@ -71,8 +71,8 @@ interface FinanceState {
     history: { date: string, netWorth: number }[];
     hasSetPreferences: boolean;
     lastUpdated: string | null;
-    _notificationTimeout: any | null;
-    _snapshotTimeout: any | null;
+    _notificationTimeout: ReturnType<typeof setTimeout> | null;
+    _snapshotTimeout: ReturnType<typeof setTimeout> | null;
     openModal: (type: ModalType) => void;
 
     closeModal: () => void;
@@ -247,7 +247,7 @@ export const useFinanceStore = create<FinanceState>()(
                                 type === 'expense' ? 'expenseItems' :
                                 type === 'asset' ? 'assetItems' : 'liabilityItems';
                     return {
-                        [key]: state[key].map((item: any) => ids.includes(item.id) ? { ...item, ...updates } : item),
+                        [key]: (state[key] as Array<FinanceItem | NetWorthItem>).map((item) => ids.includes(item.id) ? { ...item, ...updates } : item),
                         lastUpdated: new Date().toISOString()
                     };
                 });
@@ -259,7 +259,7 @@ export const useFinanceStore = create<FinanceState>()(
                                 type === 'expense' ? 'expenseItems' :
                                 type === 'asset' ? 'assetItems' : 'liabilityItems';
                     return {
-                        [key]: state[key].filter((item: any) => !ids.includes(item.id)),
+                        [key]: (state[key] as Array<FinanceItem | NetWorthItem>).filter((item) => !ids.includes(item.id)),
                         lastUpdated: new Date().toISOString()
                     };
                 });
@@ -272,25 +272,30 @@ export const useFinanceStore = create<FinanceState>()(
                 activeModal: state.activeModal === 'onboarding' ? null : state.activeModal 
             })),
             duplicateItem: (id: string, type: 'income' | 'expense' | 'asset' | 'liability' | 'insurance') => set((state: FinanceState) => {
-                let items: any[] = [];
-                if (type === 'income') items = state.incomeItems;
-                else if (type === 'expense') items = state.expenseItems;
-                else if (type === 'asset') items = state.assetItems;
-                else if (type === 'liability') items = state.liabilityItems;
-                else items = state.insuranceItems;
-
-                const item = items.find(i => i.id === id);
+                const lastUpdated = new Date().toISOString();
+                if (type === 'income') {
+                    const item = state.incomeItems.find(i => i.id === id);
+                    if (!item) return state;
+                    return { incomeItems: [...state.incomeItems, { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` }], lastUpdated };
+                }
+                if (type === 'expense') {
+                    const item = state.expenseItems.find(i => i.id === id);
+                    if (!item) return state;
+                    return { expenseItems: [...state.expenseItems, { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` }], lastUpdated };
+                }
+                if (type === 'asset') {
+                    const item = state.assetItems.find(i => i.id === id);
+                    if (!item) return state;
+                    return { assetItems: [...state.assetItems, { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` }], lastUpdated };
+                }
+                if (type === 'liability') {
+                    const item = state.liabilityItems.find(i => i.id === id);
+                    if (!item) return state;
+                    return { liabilityItems: [...state.liabilityItems, { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` }], lastUpdated };
+                }
+                const item = state.insuranceItems.find(i => i.id === id);
                 if (!item) return state;
-                const newItem = { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` };
-
-                const update: any = { lastUpdated: new Date().toISOString() };
-                if (type === 'income') update.incomeItems = [...state.incomeItems, newItem];
-                else if (type === 'expense') update.expenseItems = [...state.expenseItems, newItem];
-                else if (type === 'asset') update.assetItems = [...state.assetItems, newItem];
-                else if (type === 'liability') update.liabilityItems = [...state.liabilityItems, newItem];
-                else update.insuranceItems = [...state.insuranceItems, newItem];
-
-                return update;
+                return { insuranceItems: [...state.insuranceItems, { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` }], lastUpdated };
             }),
             toggleTheme: () => set((state: FinanceState) => ({ darkMode: !state.darkMode })),
             toggleProjectionMode: () => set((state: FinanceState) => ({ isProjectionMode: !state.isProjectionMode })),

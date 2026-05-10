@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useFinanceStore, FinanceItem, Frequency, NetWorthItem } from '../../../store/useFinanceStore';
+import { useFinanceStore, Frequency } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
-import { X, Table, ArrowRight, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { X, Table, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react';
 
 export const CSVMapperModal: React.FC = () => {
     const { csvDataToMap, setCSVDataToMap, closeModal, addIncome, addExpense, addAsset, addLiability, showNotification } = useFinanceStore();
@@ -16,7 +16,6 @@ export const CSVMapperModal: React.FC = () => {
     });
 
     const [importMode, setImportMode] = useState<'income' | 'expense' | 'asset' | 'liability' | 'auto'>('auto');
-    const [appendMode, setAppendMode] = useState(true);
 
     if (!csvDataToMap) return null;
 
@@ -157,7 +156,7 @@ export const CSVMapperModal: React.FC = () => {
                                         ].map(mode => (
                                             <button 
                                                 key={mode.id}
-                                                onClick={() => setImportMode(mode.id as any)}
+                                                onClick={() => setImportMode(mode.id as typeof importMode)}
                                                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${importMode === mode.id ? 'bg-[#007AFF] text-white shadow-lg shadow-[#007AFF]/20' : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
                                             >
                                                 {mode.label}

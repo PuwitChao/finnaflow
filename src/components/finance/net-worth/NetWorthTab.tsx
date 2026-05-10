@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFinanceStore } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
-import { getCurrencySymbol } from '../../../utils/currencies';
 import { NetWorthGroup } from './NetWorthGroup';
 import { NetWorthSummary } from './NetWorthSummary';
 import { AssetDistributionChart } from '../../viz/AssetDistributionChart';
 import { TrendChart } from '../../viz/TrendChart';
-import { TrendingUp, TrendingDown, Target, Info } from 'lucide-react';
+import { Target, Info } from 'lucide-react';
 
 export const NetWorthTab: React.FC = () => {
     const { t } = useI18n();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useI18n } from '../../i18n';
 import { getCurrencySymbol } from '../../utils/currencies';
@@ -56,7 +56,7 @@ export const TrendChart: React.FC = () => {
                             color: darkMode ? '#F5F5F7' : '#1D1D1F'
                         }}
                         itemStyle={{ fontWeight: 'bold', color: '#007AFF' }}
-                        formatter={(val: any) => [`${sym}${Number(val).toLocaleString()}`, t('inputs.netWorth.currentNetWorth')]}
+                        formatter={(val) => [`${sym}${Number(val ?? 0).toLocaleString()}`, t('inputs.netWorth.currentNetWorth')]}
 
                         labelFormatter={(label) => new Date(label).toLocaleDateString(undefined, { dateStyle: 'long' })}
 

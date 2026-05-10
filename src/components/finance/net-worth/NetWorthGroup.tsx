@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useFinanceStore, NetWorthItem as INetWorthItem } from '../../../store/useFinanceStore';
+import { useFinanceStore } from '../../../store/useFinanceStore';
 import { useI18n } from '../../../i18n';
 import { NetWorthItem } from './NetWorthItem';
-import { Plus, X, ChevronRight, LayoutGrid, List } from 'lucide-react';
+import { Plus, LayoutGrid, List } from 'lucide-react';
 
 interface NetWorthGroupProps {
     type: 'asset' | 'liability';
