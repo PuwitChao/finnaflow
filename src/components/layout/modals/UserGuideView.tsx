@@ -1,15 +1,15 @@
 import React from 'react';
 import { useI18n } from '../../../i18n';
-import { 
-    ArrowLeft, 
-    Sparkles, 
-    Zap, 
-    Rocket, 
-    ShieldCheck, 
-    ChevronRight, 
-    Book, 
-    MousePointer2, 
-    Fingerprint 
+import {
+    ArrowLeft,
+    Sparkles,
+    Zap,
+    Rocket,
+    ShieldCheck,
+    ChevronRight,
+    Book,
+    Lightbulb,
+    Fingerprint
 } from 'lucide-react';
 
 interface UserGuideViewProps {
@@ -31,6 +31,11 @@ export const UserGuideView: React.FC<UserGuideViewProps> = ({ onBack }) => {
                 'Open Batch Paste in the header and paste the text.',
                 'Wait for the engine to simplify titles (e.g., removing reference codes).',
                 'Review detected types (Income vs Expense) and import instantly.'
+            ],
+            tips: [
+                { label: 'Supported Banks', value: 'K PLUS, SCB Easy, GrabPay' },
+                { label: 'Privacy', value: 'Reference codes & IDs are auto-redacted before processing' },
+                { label: 'Pro Tip', value: 'Copy 1–3 months of history for a clearer spending picture' },
             ]
         },
         {
@@ -43,6 +48,11 @@ export const UserGuideView: React.FC<UserGuideViewProps> = ({ onBack }) => {
                 'Select items by clicking them in the Dashboard list.',
                 'Use "Select All" for rapid list moves.',
                 'Use the Floating Toolbar to change categories or delete multiple items securely.'
+            ],
+            tips: [
+                { label: 'Select Items', value: 'Click any row to toggle selection; it highlights in blue' },
+                { label: 'Floating Toolbar', value: 'Appears automatically when 2 or more items are selected' },
+                { label: 'Pro Tip', value: 'Use "Flip All Types" to convert a batch of income ↔ expense in one tap' },
             ]
         },
         {
@@ -55,6 +65,11 @@ export const UserGuideView: React.FC<UserGuideViewProps> = ({ onBack }) => {
                 'Set your expected market ROI (e.g., 7%).',
                 'Track your "Freedom Number" calculated from current expenses.',
                 'Simulate economic shocks in Projection Mode to test your resilience.'
+            ],
+            tips: [
+                { label: 'Freedom Formula', value: 'Annual Expenses ÷ 4% = the portfolio you need to retire' },
+                { label: 'Benchmark ROI', value: 'Historical S&P 500 average is ~7–10% per year after inflation' },
+                { label: 'Pro Tip', value: 'Projection Mode stress-tests scenarios without saving any changes' },
             ]
         }
     ];
@@ -125,11 +140,17 @@ export const UserGuideView: React.FC<UserGuideViewProps> = ({ onBack }) => {
                                         </li>
                                     ))}
                                 </ul>
-                                <div className="hidden md:flex items-center justify-center p-8 bg-gray-50 dark:bg-white/5 rounded-[2rem] border border-dashed border-gray-200 dark:border-white/10">
-                                    <div className="text-center space-y-3 opacity-40">
-                                        <MousePointer2 className="mx-auto" size={32} />
-                                        <p className="text-[10px] font-black uppercase tracking-widest">Interactive Tutorial Coming Soon</p>
+                                <div className="hidden md:flex flex-col gap-4 p-6 bg-gray-50 dark:bg-white/5 rounded-[2rem] border border-gray-100 dark:border-white/10">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Lightbulb size={14} className="text-amber-500 shrink-0" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Quick Reference</span>
                                     </div>
+                                    {section.tips.map((tip, i) => (
+                                        <div key={i} className="space-y-0.5">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-blue-500">{tip.label}</p>
+                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-300 leading-snug">{tip.value}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
